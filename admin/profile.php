@@ -248,6 +248,5 @@ $admin = $conn->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

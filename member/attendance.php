@@ -133,7 +133,6 @@ $monthly_stats = $conn->query("
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Monthly Attendance Chart
         const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');

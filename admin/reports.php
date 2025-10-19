@@ -242,7 +242,6 @@ while ($row = $trainer_performance->fetch_assoc()) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Member Growth Chart
         const memberGrowthCtx = document.getElementById('memberGrowthChart').getContext('2d');

@@ -243,7 +243,6 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function updateAmount() {
             const select = document.getElementById('planSelect');

@@ -188,7 +188,6 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         <?php if ($trainer): ?>
             document.addEventListener('DOMContentLoaded', function() {

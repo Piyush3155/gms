@@ -232,7 +232,6 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Show modal if editing
         <?php if ($member): ?>

@@ -284,6 +284,5 @@ $trainer = $conn->query("SELECT * FROM trainers WHERE id = $user_id")->fetch_ass
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

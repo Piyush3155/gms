@@ -210,7 +210,6 @@ $absent_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE dat
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function changeDate() {
             const date = document.getElementById('datePicker').value;

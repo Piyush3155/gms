@@ -252,6 +252,5 @@ $member = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name 
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

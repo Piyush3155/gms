@@ -207,7 +207,6 @@ $payments = $conn->query("SELECT p.*, pl.name as plan_name FROM payments p JOIN 
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function viewPlan(type, id) {
             const modal = new bootstrap.Modal(document.getElementById('planModal'));

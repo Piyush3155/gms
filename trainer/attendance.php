@@ -191,7 +191,6 @@ $monthly_total = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE us
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function changeDate() {
             const date = document.getElementById('datePicker').value;

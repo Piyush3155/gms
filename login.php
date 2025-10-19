@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .login-image {
-            background: url('assets/images/gym.jpg') center/cover no-repeat;
+            background: url('/assets/images/gym.jpg') center/cover no-repeat;
             min-height: 400px;
             position: relative;
         }
@@ -231,7 +231,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
                     <label for="email"><i class="fas fa-envelope me-2"></i>Email</label>
                 </div>
-
                 <div class="form-floating">
                     <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
                     <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
@@ -250,7 +249,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Add some interactive effects
         document.addEventListener('DOMContentLoaded', function() {

@@ -112,9 +112,11 @@ CREATE TABLE expenses (
 );
 
 -- Settings table
+DROP TABLE IF EXISTS settings;
 CREATE TABLE settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     gym_name VARCHAR(100) NOT NULL,
+    tagline VARCHAR(255),
     contact VARCHAR(20),
     address TEXT,
     email VARCHAR(100),
@@ -130,3 +132,7 @@ INSERT INTO plans (name, duration_months, amount, description) VALUES
 ('Basic Plan', 1, 500.00, 'Basic membership with access to gym equipment'),
 ('Premium Plan', 3, 1200.00, 'Premium membership with trainer sessions'),
 ('VIP Plan', 12, 5000.00, 'VIP membership with personal trainer and diet plans');
+
+-- Insert default gym settings
+INSERT INTO settings (gym_name, tagline, contact, address, email) VALUES
+('FitZone Gym', 'Transform Your Body, Transform Your Life', '+1-555-0123', '123 Fitness Street, Health City, HC 12345', 'info@fitzone.com');

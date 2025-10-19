@@ -13,7 +13,7 @@ A comprehensive web-based Gym Management System built with PHP, MySQL, Bootstrap
 - **Payment Management**: Record payments and generate invoices
 - **Expense Tracking**: Track gym expenses by category
 - **Reports & Analytics**: Comprehensive reports with charts and graphs
-- **Settings**: Configure gym information, logo, and branding
+- **Settings**: Configure gym information, logo, and branding (name, tagline, contact, address)
 - **Profile Management**: Update admin profile and change password
 
 ### 👨‍🏫 Trainer Features
@@ -127,7 +127,16 @@ The system uses the following main tables:
 - `workout_plans` - Workout plans
 - `diet_plans` - Diet plans
 - `expenses` - Gym expenses
-- `settings` - System settings
+- `settings` - System settings (gym name, tagline, contact info, logo)
+
+## Configuration
+
+After setting up the database, you can configure the gym information through the admin settings page:
+
+1. Login as admin (username: `admin`, password: `admin123`)
+2. Navigate to Settings in the sidebar
+3. Update gym name, tagline, contact information, and upload logo
+4. The gym name and tagline will be displayed throughout the application
 
 ## Usage
 
