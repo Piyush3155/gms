@@ -51,9 +51,11 @@ $monthly_expenses = $conn->query("
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-money-bill-wave me-2"></i>Expense Management</h2>
             <button class="btn btn-modern" data-bs-toggle="modal" data-bs-target="#expenseModal">
@@ -220,5 +222,8 @@ $monthly_expenses = $conn->query("
             console.log('Delete expense: <?php echo $_GET['delete']; ?>');
         <?php endif; ?>
     </script>
+        </div>
+    </div>
+    </div>
 </body>
 </html>

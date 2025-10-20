@@ -64,9 +64,11 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <h2>Trainer Management</h2>
 
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#trainerModal">Add New Trainer</button>
@@ -186,6 +188,8 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                 </form>
             </div>
         </div>
+        </div>
+    </div>
     </div>
 
     <script>

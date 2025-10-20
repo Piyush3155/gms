@@ -25,9 +25,11 @@ $diet_plans = $conn->query("
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-utensils me-2"></i>My Diet Plans</h2>
         </div>
@@ -121,6 +123,9 @@ $diet_plans = $conn->query("
                 <p class="text-muted">Contact your trainer or gym administrator for personalized diet plans.</p>
             </div>
         <?php endif; ?>
+    </div>
+        </div>
+    </div>
     </div>
 
 </body>

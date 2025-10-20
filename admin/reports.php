@@ -103,9 +103,11 @@ while ($row = $trainer_performance->fetch_assoc()) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Reports & Analytics</h2>
 
         <!-- Key Metrics -->
@@ -374,5 +376,8 @@ while ($row = $trainer_performance->fetch_assoc()) {
             }
         });
     </script>
+        </div>
+    </div>
+    </div>
 </body>
 </html>

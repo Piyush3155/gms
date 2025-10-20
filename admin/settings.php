@@ -81,9 +81,11 @@ $settings = $conn->query("SELECT * FROM settings LIMIT 1")->fetch_assoc();
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="row">
             <div class="col-md-8 mx-auto">
                 <div class="card">
@@ -160,6 +162,8 @@ $settings = $conn->query("SELECT * FROM settings LIMIT 1")->fetch_assoc();
                 </div>
             </div>
         </div>
+        </div>
+    </div>
     </div>
 
 </body>

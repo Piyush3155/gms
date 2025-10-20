@@ -61,9 +61,11 @@ $plans = $conn->query("SELECT * FROM plans");
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <h2>Membership Plans</h2>
 
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#planModal">Add New Plan</button>
@@ -161,5 +163,8 @@ $plans = $conn->query("SELECT * FROM plans");
             });
         <?php endif; ?>
     </script>
+        </div>
+    </div>
+    </div>
 </body>
 </html>

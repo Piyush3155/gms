@@ -32,9 +32,11 @@ $diet_plans = $conn->query("SELECT COUNT(*) as count FROM diet_plans WHERE train
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="row">
             <div class="col-md-8">
                 <h2>Welcome, <?php echo $trainer['name']; ?>!</h2>
@@ -128,6 +130,8 @@ $diet_plans = $conn->query("SELECT COUNT(*) as count FROM diet_plans WHERE train
                 </div>
             </div>
         </div>
+        </div>
+    </div>
     </div>
 
 </body>

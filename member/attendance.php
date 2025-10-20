@@ -37,9 +37,11 @@ $monthly_stats = $conn->query("
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <h2><i class="fas fa-calendar-check me-2"></i>My Attendance History</h2>
 
         <!-- Attendance Summary -->
@@ -169,5 +171,8 @@ $monthly_stats = $conn->query("
             }
         });
     </script>
+        </div>
+    </div>
+    </div>
 </body>
 </html>

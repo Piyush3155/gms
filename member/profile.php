@@ -67,9 +67,11 @@ $member = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name 
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="row">
             <div class="col-md-4">
                 <div class="card">
@@ -250,6 +252,9 @@ $member = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name 
                 </div>
             </div>
         </div>
+    </div>
+        </div>
+    </div>
     </div>
 
 </body>

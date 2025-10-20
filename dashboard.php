@@ -59,88 +59,97 @@ if ($user_role == 'admin') {
     <title>Dashboard - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="<?php echo SITE_URL; ?>assets/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="sidebar-open">
     <div class="main-wrapper">
     <?php include 'includes/header.php'; ?>
 
     <div class="page-content">
-        <div class="container mt-4">
-            <h1>Welcome to <?php echo get_gym_name(); ?>, <?php echo $user_name; ?>!</h1>
-            <?php if (get_gym_tagline()): ?>
-                <p class="text-muted"><?php echo get_gym_tagline(); ?></p>
-            <?php endif; ?>
+        <div class="container-fluid">
+            <div class="fade-in">
+                <h1 class="display-6">Welcome back, <?php echo $user_name; ?>!</h1>
+                <p class="text-muted">Here's a snapshot of your gym's activity today.</p>
 
-            <div class="row mt-4">
-                <?php if ($user_role == 'admin'): ?>
-                    <div class="col-md-3 mb-4">
-                        <div class="stats-card text-white">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Members</h5>
-                                <h2><?php echo $stats['members']; ?></h2>
+                <div class="row mt-4">
+                    <?php if ($user_role == 'admin'): ?>
+                        <div class="col-md-6 col-xl-3 mb-4">
+                            <div class="stats-card bg-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Members</h5>
+                                    <h2><?php echo $stats['members']; ?></h2>
+                                    <div class="icon"><i class="fas fa-users"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-3 mb-4">
-                        <div class="stats-card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-user-tie me-2"></i>Total Trainers</h5>
-                                <h2><?php echo $stats['trainers']; ?></h2>
+                        <div class="col-md-6 col-xl-3 mb-4">
+                            <div class="stats-card bg-danger">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Trainers</h5>
+                                    <h2><?php echo $stats['trainers']; ?></h2>
+                                    <div class="icon"><i class="fas fa-user-tie"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-3 mb-4">
-                        <div class="stats-card text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-calendar-check me-2"></i>Today's Attendance</h5>
-                                <h2><?php echo $stats['attendance']; ?></h2>
+                        <div class="col-md-6 col-xl-3 mb-4">
+                            <div class="stats-card bg-info">
+                                <div class="card-body">
+                                    <h5 class="card-title">Today's Attendance</h5>
+                                    <h2><?php echo $stats['attendance']; ?></h2>
+                                    <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-3 mb-4">
-                        <div class="stats-card text-white" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-dollar-sign me-2"></i>Monthly Revenue</h5>
-                                <h2>$<?php echo number_format($stats['revenue'], 2); ?></h2>
+                        <div class="col-md-6 col-xl-3 mb-4">
+                            <div class="stats-card bg-success">
+                                <div class="card-body">
+                                    <h5 class="card-title">Monthly Revenue</h5>
+                                    <h2>$<?php echo number_format($stats['revenue'], 2); ?></h2>
+                                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php elseif ($user_role == 'trainer'): ?>
-                    <div class="col-md-6 mb-4">
-                        <div class="stats-card text-white">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-users me-2"></i>Assigned Members</h5>
-                                <h2><?php echo $stats['members']; ?></h2>
+                    <?php elseif ($user_role == 'trainer'): ?>
+                        <div class="col-md-6 mb-4">
+                            <div class="stats-card bg-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">Assigned Members</h5>
+                                    <h2><?php echo $stats['members']; ?></h2>
+                                    <div class="icon"><i class="fas fa-users"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-4">
-                        <div class="stats-card text-white" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-clock me-2"></i>Today's Sessions</h5>
-                                <h2><?php echo $stats['sessions']; ?></h2>
+                        <div class="col-md-6 mb-4">
+                            <div class="stats-card bg-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title">Today's Sessions</h5>
+                                    <h2><?php echo $stats['sessions']; ?></h2>
+                                    <div class="icon"><i class="fas fa-clock"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php elseif ($user_role == 'member'): ?>
-                    <div class="col-md-6 mb-4">
-                        <div class="stats-card text-white">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-id-card me-2"></i>Membership Status</h5>
-                                <h2><?php echo ucfirst($stats['status']); ?></h2>
+                    <?php elseif ($user_role == 'member'): ?>
+                        <div class="col-md-6 mb-4">
+                            <div class="stats-card bg-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">Membership Status</h5>
+                                    <h2><?php echo ucfirst($stats['status']); ?></h2>
+                                    <div class="icon"><i class="fas fa-id-card"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-4">
-                        <div class="stats-card text-white" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i>This Month's Attendance</h5>
-                                <h2><?php echo $stats['attendance']; ?> days</h2>
+                        <div class="col-md-6 mb-4">
+                            <div class="stats-card bg-secondary">
+                                <div class="card-body">
+                                    <h5 class="card-title">This Month's Attendance</h5>
+                                    <h2><?php echo $stats['attendance']; ?> days</h2>
+                                    <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>

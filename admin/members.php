@@ -71,9 +71,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <h2>Member Management</h2>
 
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#memberModal">Add New Member</button>
@@ -230,6 +232,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                 </form>
             </div>
         </div>
+        </div>
+    </div>
     </div>
 
     <script>

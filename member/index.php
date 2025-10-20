@@ -32,9 +32,11 @@ $payments = $conn->query("SELECT p.*, pl.name as plan_name FROM payments p JOIN 
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="row">
             <div class="col-md-8">
                 <h2>Welcome, <?php echo $member['name']; ?>!</h2>
@@ -190,6 +192,8 @@ $payments = $conn->query("SELECT p.*, pl.name as plan_name FROM payments p JOIN 
                 </div>
             </div>
         </div>
+        </div>
+    </div>
     </div>
 
     <!-- Plan View Modal -->
