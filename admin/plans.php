@@ -63,6 +63,8 @@ $plans = $conn->query("SELECT * FROM plans");
     <link href="../assets/css/style.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 <body>
     <div class="main-wrapper">
@@ -106,8 +108,8 @@ $plans = $conn->query("SELECT * FROM plans");
                             <td>₹<?php echo number_format($row['amount'], 2); ?></td>
                             <td><?php echo substr($row['description'], 0, 50) . (strlen($row['description']) > 50 ? '...' : ''); ?></td>
                             <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')"> <i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>

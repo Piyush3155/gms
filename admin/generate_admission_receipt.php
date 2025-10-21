@@ -37,181 +37,251 @@ if (!$member) {
 $settings = get_gym_settings();
 
 class PDF extends FPDF {
+    private $settings;
+
+    function __construct($settings) {
+        parent::__construct();
+        $this->settings = $settings;
+    }
+
     function Header() {
-        // Header is handled in main content
+        // Gym Logo
+        $logo_path = '../' . $this->settings['logo']; // Adjust path to use the database value directly
+        $file_extension = strtolower(pathinfo($logo_path, PATHINFO_EXTENSION)); // Get file extension
+
+        if (!empty($this->settings['logo']) && file_exists($logo_path)) {
+            if (in_array($file_extension, ['png', 'jpg', 'jpeg'])) { // Check for supported formats
+                try {
+                    $this->Image($logo_path, 10, 12, 30, 0, strtoupper($file_extension)); // Specify file type
+                } catch (Exception $e) {
+                    error_log('Error displaying logo: ' . $e->getMessage());
+                    $this->SetFont('Arial', 'B', 20);
+                    $this->SetXY(15, 15);
+                    $this->Cell(30, 10, 'GYM', 0, 0, 'C');
+                }
+            } else {
+                error_log('Unsupported image format: ' . $logo_path);
+                $this->SetFont('Arial', 'B', 20);
+                $this->SetXY(15, 15);
+                $this->Cell(30, 10, 'GYM', 0, 0, 'C');
+            }
+        } else {
+            error_log('Logo not found or invalid: ' . $logo_path);
+            $this->SetFont('Arial', 'B', 20);
+            $this->SetXY(15, 15);
+            $this->Cell(30, 10, 'GYM', 0, 0, 'C');
+        }
+
+        // Gym Info (Right-aligned)
+        $this->SetTextColor(50, 50, 50); // Dark gray for gym name
+        $this->SetFont('Arial', 'B', 18);
+        $this->Cell(0, 8, $this->settings['gym_name'], 0, 1, 'R');
+        $this->SetTextColor(0); // Reset to black
+        
+        if (!empty($this->settings['address'])) {
+            $this->SetFont('Arial', '', 10);
+            $this->MultiCell(0, 5, $this->settings['address'], 0, 'R');
+        }
+
+        if (!empty($this->settings['contact'])) {
+            $this->SetFont('Arial', '', 10);
+            $this->Cell(0, 5, 'Phone: ' . $this->settings['contact'], 0, 1, 'R');
+        }
+        if (!empty($this->settings['email'])) {
+            $this->SetFont('Arial', '', 10);
+            $this->Cell(0, 5, 'Email: ' . $this->settings['email'], 0, 1, 'R');
+        }
+
+        // Line separator
+        $this->Ln(5);
+        $this->Line(10, $this->GetY(), 200, $this->GetY());
+        $this->Ln(5);
     }
 
     function Footer() {
-        $this->SetY(-30);
+        $this->SetY(-25);
         $this->SetFont('Arial', 'I', 8);
-        $this->Cell(0, 10, 'This is a computer generated receipt. No signature required.', 0, 0, 'C');
+        $this->Cell(0, 10, 'This is a computer-generated receipt and does not require a signature.', 0, 0, 'C');
+    }
+
+    function ReceiptTitle() {
+        $this->SetTextColor(80, 80, 80); // Dark gray
+        $this->SetFont('Arial', 'B', 16);
+        $this->Cell(0, 10, 'MEMBERSHIP ADMISSION RECEIPT', 0, 1, 'C');
+        $this->SetTextColor(0); // Reset to black
+        $this->Ln(5);
+    }
+
+    function ReceiptDetails($member) {
+        $this->SetFont('Arial', '', 12);
+        $this->Cell(95, 7, 'Receipt No: #' . str_pad($member['id'], 6, '0', STR_PAD_LEFT), 0, 0, 'L');
+        $this->Cell(95, 7, 'Date: ' . date('d M, Y', strtotime($member['join_date'])), 0, 1, 'R');
+        $this->Ln(5);
+    }
+
+    function MemberDetails($member) {
+        $this->SetFillColor(80, 80, 80); // Dark Gray
+        $this->SetTextColor(255); // White
+        $this->SetFont('Arial', 'B', 12);
+        $this->Cell(0, 8, 'BILLED TO', 0, 1, 'L', true);
+        $this->SetTextColor(0); // Reset to black
+
+        $this->Ln(2);
+        $this->SetFont('Arial', '', 11);
+        $this->Cell(0, 6, $member['name'], 0, 1, 'L');
+        if($member['address']) $this->Cell(0, 6, $member['address'], 0, 1, 'L');
+        if($member['contact']) $this->Cell(0, 6, 'Contact: ' . $member['contact'], 0, 1, 'L');
+        if($member['email']) $this->Cell(0, 6, 'Email: ' . $member['email'], 0, 1, 'L');
+        $this->Ln(10);
+    }
+
+    function SetFillColor($r, $g=null, $b=null) {
+        if(($r==0 && $g==0 && $b==0) || $g===null)
+            $this->FillColor = sprintf('%.3F g', $r/255);
+        else
+            $this->FillColor = sprintf('%.3F %.3F %.3F rg', $r/255, $g/255, $b/255);
+        $this->ColorFlag = ($this->FillColor!=$this->TextColor);
+    }
+
+    function SetTextColor($r, $g=null, $b=null) {
+        if(($r==0 && $g==0 && $b==0) || $g===null)
+            $this->TextColor = sprintf('%.3F g', $r/255);
+        else
+            $this->TextColor = sprintf('%.3F %.3F %.3F rg', $r/255, $g/255, $b/255);
+        $this->ColorFlag = ($this->FillColor!=$this->TextColor);
+    }
+
+    function Image($file, $x=null, $y=null, $w=0, $h=0, $type='', $link='')
+    {
+        if(!isset($this->images[$file]))
+        {
+            // First use of this image, get info
+            if($type=='')
+            {
+                $pos = strrpos($file,'.');
+                if(!$pos)
+                    $this->Error('Image file has no extension and no type was specified: '.$file);
+                $type = substr($file,$pos+1);
+            }
+            $type = strtolower($type);
+            if($type=='jpeg')
+                $type = 'jpg';
+            $mtd = '_parse'.$type;
+            if(!method_exists($this,$mtd))
+                $this->Error('Unsupported image type: '.$type);
+            $info = $this->$mtd($file);
+            $info['i'] = count($this->images)+1;
+            $this->images[$file] = $info;
+        }
+        else
+            $info = $this->images[$file];
+
+        // Automatic width and height calculation if needed
+        if($w==0 && $h==0)
+        {
+            // Put image at 72 dpi
+            $w = -96;
+            $h = -96;
+        }
+        if($w<0)
+            $w = -$info['w']*72/$w/$this->k;
+        if($h<0)
+            $h = -$info['h']*72/$h/$this->k;
+        if($w==0)
+            $w = $h*$info['w']/$info['h'];
+        if($h==0)
+            $h = $w*$info['h']/$info['w'];
+
+        // Flowing mode
+        if($y===null)
+        {
+            if($this->y+$h>$this->PageBreakTrigger && !$this->InHeader && !$this->InFooter && $this->AutoPageBreak)
+            {
+                // Automatic page break
+                $x2 = $this->x;
+                $this->AddPage($this->CurOrientation,$this->CurPageSize);
+                $this->x = $x2;
+            }
+            $y = $this->y;
+            $this->y += $h;
+        }
+
+        if($x===null)
+            $x = $this->x;
+        $this->_out(sprintf('q %.2F 0 0 %.2F %.2F %.2F cm /I%d Do Q',$w*$this->k,$h*$this->k,$x*$this->k,($this->h-($y+$h))*$this->k,$info['i']));
+        if($link)
+            $this->Link($x,$y,$w,$h,$link);
+    }
+
+    function SetXY($x, $y)
+    {
+        $this->x = $x;
+        $this->y = $y;
+    }
+
+    function GetY()
+    {
+        return $this->y;
+    }
+
+    function Line($x1, $y1, $x2, $y2)
+    {
+        $this->_out(sprintf('%.2F %.2F m %.2F %.2F l S',$x1*$this->k,($this->h-$y1)*$this->k,$x2*$this->k,($this->h-$y2)*$this->k));
+    }
+
+    function MembershipTable($member) {
+        $this->SetFont('Arial', 'B', 11);
+        $this->SetFillColor(50, 50, 50); // Darker Gray
+        $this->SetTextColor(255); // White
+        $this->Cell(95, 8, 'Description', 1, 0, 'L', true);
+        $this->Cell(95, 8, 'Amount', 1, 1, 'R', true);
+        $this->SetTextColor(0); // Reset to black
+
+        $this->SetFont('Arial', '', 11);
+        $plan_description = 'Membership Plan: ' . $member['plan_name'] . ' (' . $member['duration_months'] . ' months)';
+        $this->Cell(95, 8, $plan_description, 1, 0, 'L');
+        $this->Cell(95, 8, 'Rs. ' . number_format($member['amount'], 2), 1, 1, 'R');
+
+        if ($member['trainer_name']) {
+            $this->Cell(95, 8, 'Personal Trainer: ' . $member['trainer_name'], 1, 0, 'L');
+            $this->Cell(95, 8, '', 1, 1, 'R'); // Assuming trainer cost is included or not shown
+        }
+
+        // Total
+        $this->SetFont('Arial', 'B', 12);
+        $this->SetFillColor(230, 230, 230); // Light Gray for total
+        $this->Cell(95, 10, 'Total Amount', 1, 0, 'R', true);
+        $this->Cell(95, 10, 'Rs. ' . number_format($member['amount'], 2), 1, 1, 'R', true);
+        $this->Ln(10);
+    }
+
+    function OtherDetails($member) {
+        $this->SetFillColor(80, 80, 80); // Dark Gray
+        $this->SetTextColor(255); // White
+        $this->SetFont('Arial', 'B', 11);
+        $this->Cell(0, 8, 'MEMBERSHIP PERIOD', 0, 1, 'L', true);
+        $this->SetTextColor(0); // Reset to black
+        
+        $this->Ln(2);
+        $this->SetFont('Arial', '', 11);
+        $this->Cell(0, 7, 'Join Date: ' . date('d M, Y', strtotime($member['join_date'])), 0, 1, 'L');
+        $this->Cell(0, 7, 'Expiry Date: ' . date('d M, Y', strtotime($member['expiry_date'])), 0, 1, 'L');
+        $this->Ln(5);
     }
 }
 
 // Create new PDF document
-$pdf = new PDF();
+$pdf = new PDF($settings);
 $pdf->AddPage();
 
-// Set font
-$pdf->SetFont('Arial', '', 12);
-
-// Header with gym logo and info
-$y = 15;
-
-// Gym Logo (if exists) - simplified for basic PDF
-if (!empty($settings['logo']) && file_exists('../assets/images/' . $settings['logo'])) {
-    // Logo not supported in basic PDF
-    $x_start = 50;
-} else {
-    // Default gym icon (text representation)
-    $pdf->SetFont('Arial', 'B', 24);
-    $pdf->SetX(15);
-    $pdf->SetY($y);
-    $pdf->Cell(30, 10, 'GYM', 0, 0, 'C');
-    $x_start = 50;
-}
-
-// Gym Name and Tagline
-$pdf->SetFont('Arial', 'B', 20);
-$pdf->SetX($x_start);
-$pdf->SetY($y);
-$pdf->Cell(0, 8, $settings['gym_name'], 0, 0); // Don't move to next line yet
-
-if (!empty($settings['tagline'])) {
-    $pdf->SetFont('Arial', 'I', 12);
-    $pdf->SetX($x_start);
-    $pdf->SetY($y + 8);
-    $pdf->Cell(0, 6, $settings['tagline'], 0, 1); // Move to next line after tagline
-} else {
-    $pdf->Ln(8); // If no tagline, just move down
-}
-
-// Contact Information
-$contact_info = [];
-if (!empty($settings['contact'])) $contact_info[] = 'Phone: ' . $settings['contact'];
-if (!empty($settings['email'])) $contact_info[] = 'Email: ' . $settings['email'];
-if (!empty($settings['address'])) $contact_info[] = 'Address: ' . $settings['address'];
-
-if (!empty($contact_info)) {
-    $pdf->SetFont('Arial', '', 10);
-    $y += 16; // Move down from the gym name/tagline
-    foreach ($contact_info as $info) {
-        $pdf->SetX($x_start);
-        $pdf->SetY($y);
-        $pdf->Cell(0, 5, $info, 0, 1);
-        $y += 5;
-    }
-}
-
-// Title
-$y += 10;
-$pdf->SetFont('Arial', 'B', 16);
-$pdf->SetX(15);
-$pdf->SetY($y);
-$pdf->Cell(0, 10, 'MEMBERSHIP ADMISSION RECEIPT', 0, 1, 'C');
-$y += 15;
-
-// Receipt details box - simplified
-// $pdf->SetFillColor(240, 240, 240);
-// $pdf->Rect(15, $y, 180, 80, 'F');
-
-// Receipt Number and Date
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->SetX(20);
-$pdf->SetY($y + 5);
-$pdf->Cell(50, 8, 'Receipt No: #' . str_pad($member['id'], 6, '0', STR_PAD_LEFT), 0, 0);
-
-$pdf->SetX(120);
-$pdf->SetY($y + 5);
-$pdf->Cell(50, 8, 'Date: ' . date('d/m/Y', strtotime($member['join_date'])), 0, 1);
-
-// Member Details
-$y += 10;
-$pdf->SetFont('Arial', 'B', 11);
-$pdf->SetX(20);
-$pdf->SetY($y);
-$pdf->Cell(0, 7, 'MEMBER DETAILS', 0, 1);
-
-$y += 8;
-$pdf->SetFont('Arial', '', 10);
-
-$member_details = [
-    'Name' => $member['name'],
-    'Email' => $member['email'],
-    'Contact' => $member['contact'],
-    'Gender' => ucfirst($member['gender'] ?? 'N/A'),
-    'Date of Birth' => $member['dob'] ? date('d/m/Y', strtotime($member['dob'])) : 'N/A',
-    'Address' => $member['address'] ?: 'N/A'
-];
-
-foreach ($member_details as $label => $value) {
-    $pdf->SetX(25);
-    $pdf->SetY($y);
-    $pdf->Cell(40, 6, $label . ':', 0, 0);
-    $pdf->Cell(0, 6, $value, 0, 1);
-    $y += 6;
-}
-
-// Membership Details
-$y += 5;
-$pdf->SetFont('Arial', 'B', 11);
-$pdf->SetX(20);
-$pdf->SetY($y);
-$pdf->Cell(0, 7, 'MEMBERSHIP DETAILS', 0, 1);
-
-$y += 8;
-$pdf->SetFont('Arial', '', 10);
-
-$membership_details = [
-    'Plan' => $member['plan_name'] . ' (' . $member['duration_months'] . ' months)',
-    'Amount' => '₹' . number_format($member['amount'], 2),
-    'Join Date' => date('d/m/Y', strtotime($member['join_date'])),
-    'Expiry Date' => date('d/m/Y', strtotime($member['expiry_date'])),
-    'Trainer' => $member['trainer_name'] ?: 'Not Assigned',
-    'Status' => ucfirst($member['status'])
-];
-
-foreach ($membership_details as $label => $value) {
-    $pdf->SetX(25);
-    $pdf->SetY($y);
-    $pdf->Cell(40, 6, $label . ':', 0, 0);
-    $pdf->Cell(0, 6, $value, 0, 1);
-    $y += 6;
-}
-
-// Terms and Conditions
-$y += 10;
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->SetX(15);
-$pdf->SetY($y);
-$pdf->Cell(0, 6, 'TERMS & CONDITIONS:', 0, 1, 'C');
-
-$y += 8;
-$pdf->SetFont('Arial', '', 9);
-$terms = [
-    '1. Membership is valid from join date to expiry date.',
-    '2. Late payment may result in membership suspension.',
-    '3. Membership is non-transferable.',
-    '4. Please bring this receipt for verification.',
-    '5. For any queries, contact gym management.'
-];
-
-foreach ($terms as $term) {
-    $pdf->SetX(20);
-    $pdf->SetY($y);
-    $pdf->Cell(0, 5, $term, 0, 1);
-    $y += 6;
-}
-
-// Signature section
-$y += 10;
-$pdf->SetFont('Arial', '', 10);
-$pdf->SetX(15);
-$pdf->SetY($y);
-$pdf->Cell(80, 6, 'Member Signature: ___________________________', 0, 0);
-$pdf->Cell(0, 6, 'Authorized Signature: ___________________________', 0, 1);
+// Build the receipt
+$pdf->ReceiptTitle();
+$pdf->ReceiptDetails($member);
+$pdf->MemberDetails($member);
+$pdf->MembershipTable($member);
+$pdf->OtherDetails($member);
 
 // Output the PDF
 $filename = 'Admission_Receipt_' . preg_replace('/[^A-Za-z0-9\-_]/', '_', $member['name']) . '_' . date('Y-m-d') . '.pdf';
-$pdf->Output($filename, 'D');
+$pdf->Output($filename, 'I'); // 'I' for inline, 'D' for download
 ?>

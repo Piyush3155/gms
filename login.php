@@ -59,14 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body class="login-page">
     <div class="login-container">
-        <div class="login-image">
-            <div class="content">
+            <div class="content-box text-center text-white p-4 mt-4 align-items-center d-flex flex-column justify-content-center">
                 <div class="icon"><i class="fas fa-dumbbell"></i></div>
                 <h1>Welcome Back</h1>
                 <p>Your journey to strength and fitness continues here. Let's get to work.</p>
             </div>
-        </div>
-        <div class="login-form">
+            <div class="login-form">
             <h2><i class="fas fa-user-circle me-2"></i>Secure Login</h2>
 
             <?php if (!empty($errors)): ?>

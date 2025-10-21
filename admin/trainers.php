@@ -65,6 +65,9 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
     <!-- DataTables CSS -->
+       
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 </head>
 <body>
@@ -114,9 +117,13 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                             <td><?php echo $row['experience']; ?></td>
                             <td>$<?php echo number_format($row['salary'], 2); ?></td>
                             <td><?php echo $row['member_count']; ?></td>
-                            <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            <td class="d-flex gap-2">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-xs btn-warning">
+                                    <i class="bi bi-pencil-square"></i> 
+                                </a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Are you sure?')">
+                                    <i class="bi bi-trash"></i> 
+                                </a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
