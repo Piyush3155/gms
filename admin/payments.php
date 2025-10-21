@@ -75,7 +75,7 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
                 <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-dollar-sign me-2"></i>Total Revenue</h5>
-                        <h2>$<?php echo number_format($total_revenue, 2); ?></h2>
+                        <h2>₹<?php echo number_format($total_revenue, 2); ?></h2>
                     </div>
                 </div>
             </div>
@@ -83,7 +83,7 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
                 <div class="card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i>This Month</h5>
-                        <h2>$<?php echo number_format($this_month_revenue, 2); ?></h2>
+                        <h2>₹<?php echo number_format($this_month_revenue, 2); ?></h2>
                     </div>
                 </div>
             </div>
@@ -99,12 +99,20 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
 
         <!-- Payments Table -->
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-list me-2"></i>Payment History</h5>
+                <div>
+                    <button class="btn btn-success btn-sm me-2" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-1"></i>Excel
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-striped" id="paymentsTable">
                         <thead>
                             <tr>
                                 <th>Invoice #</th>
@@ -123,7 +131,7 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
                                     <td><?php echo $payment['invoice_no']; ?></td>
                                     <td><?php echo $payment['member_name']; ?></td>
                                     <td><?php echo $payment['plan_name']; ?></td>
-                                    <td>$<?php echo number_format($payment['amount'], 2); ?></td>
+                                    <td>₹<?php echo number_format($payment['amount'], 2); ?></td>
                                     <td><?php echo date('M j, Y', strtotime($payment['payment_date'])); ?></td>
                                     <td>
                                         <span class="badge bg-secondary">
@@ -194,7 +202,7 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
                                 <?php
                                 $plans->data_seek(0);
                                 while ($plan = $plans->fetch_assoc()): ?>
-                                    <option value="<?php echo $plan['id']; ?>" data-amount="<?php echo $plan['amount']; ?>"><?php echo $plan['name']; ?> - $<?php echo $plan['amount']; ?></option>
+                                    <option value="<?php echo $plan['id']; ?>" data-amount="<?php echo $plan['amount']; ?>"><?php echo $plan['name']; ?> - ₹<?php echo $plan['amount']; ?></option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
@@ -202,7 +210,7 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
                         <div class="mb-3">
                             <label class="form-label">Amount</label>
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
+                                <span class="input-group-text">₹</span>
                                 <input type="number" class="form-control" name="amount" id="amountInput" step="0.01" required>
                             </div>
                         </div>
@@ -260,7 +268,77 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
             // Simple print functionality - in real app, you'd generate a proper invoice
             window.open(`invoice.php?id=${paymentId}`, '_blank');
         }
+
+        // Export to Excel
+        function exportToExcel() {
+            const table = document.getElementById('paymentsTable');
+            const wb = XLSX.utils.book_new();
+            
+            const clonedTable = table.cloneNode(true);
+            const rows = clonedTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                const lastCell = row.querySelector('th:last-child, td:last-child');
+                if (lastCell) lastCell.remove();
+            });
+            
+            const ws = XLSX.utils.table_to_sheet(clonedTable);
+            ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 10}];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Payments');
+            XLSX.writeFile(wb, 'Payments_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            doc.setFontSize(18);
+            doc.text('Payment History', 14, 15);
+            doc.setFontSize(10);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
+            
+            const table = document.getElementById('paymentsTable');
+            const rows = [];
+            const headers = [];
+            
+            const headerCells = table.querySelectorAll('thead th');
+            headerCells.forEach((cell, index) => {
+                if (index < headerCells.length - 1) {
+                    headers.push(cell.textContent.trim());
+                }
+            });
+            
+            const bodyRows = table.querySelectorAll('tbody tr');
+            bodyRows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell, index) => {
+                    if (index < cells.length - 1) {
+                        rowData.push(cell.textContent.trim());
+                    }
+                });
+                rows.push(rowData);
+            });
+            
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 28,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+            
+            doc.save('Payments_' + new Date().toISOString().slice(0,10) + '.pdf');
+        }
     </script>
+
+    <!-- Include libraries for export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
         </div>
     </div>
     </div>

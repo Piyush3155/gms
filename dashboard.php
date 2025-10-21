@@ -105,7 +105,7 @@ if ($user_role == 'admin') {
                             <div class="stats-card bg-success">
                                 <div class="card-body">
                                     <h5 class="card-title">Monthly Revenue</h5>
-                                    <h2>$<?php echo number_format($stats['revenue'], 2); ?></h2>
+                                    <h2>₹<?php echo number_format($stats['revenue'], 2); ?></h2>
                                     <div class="icon"><i class="fas fa-dollar-sign"></i></div>
                                 </div>
                             </div>

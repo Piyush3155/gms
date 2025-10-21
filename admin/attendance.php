@@ -173,12 +173,20 @@ $absent_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE dat
 
         <!-- Attendance Records -->
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-list me-2"></i>Attendance Records for <?php echo date('F j, Y', strtotime($selected_date)); ?></h5>
+                <div>
+                    <button class="btn btn-success btn-sm me-2" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel me-1"></i>Excel
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf me-1"></i>PDF
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-striped" id="attendanceTable">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -212,10 +220,69 @@ $absent_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE dat
         </div>
     </div>
 
+    <!-- Include libraries for export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <script>
         function changeDate() {
             const date = document.getElementById('datePicker').value;
-            window.location.href = `attendance.php?date=${date}`;
+            window.location.href = 'attendance.php?date=' + date;
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const table = document.getElementById('attendanceTable');
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
+            ws['!cols'] = [{wch: 20}, {wch: 10}, {wch: 10}, {wch: 12}, {wch: 12}];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+            XLSX.writeFile(wb, 'Attendance_<?php echo $selected_date; ?>.xlsx');
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text('Attendance Report', 14, 15);
+            doc.setFontSize(10);
+            doc.text('Date: <?php echo date('F j, Y', strtotime($selected_date)); ?>', 14, 22);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, 28);
+            
+            const table = document.getElementById('attendanceTable');
+            const rows = [];
+            const headers = [];
+            
+            const headerCells = table.querySelectorAll('thead th');
+            headerCells.forEach(cell => {
+                headers.push(cell.textContent.trim());
+            });
+            
+            const bodyRows = table.querySelectorAll('tbody tr');
+            bodyRows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                cells.forEach(cell => {
+                    rowData.push(cell.textContent.trim());
+                });
+                rows.push(rowData);
+            });
+            
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 34,
+                theme: 'grid',
+                styles: { fontSize: 10, cellPadding: 3 },
+                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+            
+            doc.save('Attendance_<?php echo $selected_date; ?>.pdf');
         }
     </script>
         </div>

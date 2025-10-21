@@ -7,12 +7,12 @@ $user_id = $_SESSION['user_id'];
 // Handle profile update
 if (isset($_POST['update_profile'])) {
     $name = sanitize($_POST['name']);
-    $contact = sanitize($_POST['contact']);
+    $phone = sanitize($_POST['phone']);
     $email = sanitize($_POST['email']);
 
     if (empty($errors)) {
-        $stmt = $conn->prepare("UPDATE users SET name=?, contact=?, email=? WHERE id=?");
-        $stmt->bind_param("sssi", $name, $contact, $email, $user_id);
+        $stmt = $conn->prepare("UPDATE users SET name=?, phone=?, email=? WHERE id=?");
+        $stmt->bind_param("sssi", $name, $phone, $email, $user_id);
 
         if ($stmt->execute()) {
             $success = "Profile updated successfully!";
@@ -78,8 +78,8 @@ $admin = $conn->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
 
                         <div class="row text-center mt-3">
                             <div class="col-6">
-                                <strong><?php echo $admin['username']; ?></strong>
-                                <br><small class="text-muted">Username</small>
+                                <strong><?php echo $admin['email']; ?></strong>
+                                <br><small class="text-muted">Email</small>
                             </div>
                             <div class="col-6">
                                 <strong><?php
@@ -118,17 +118,10 @@ $admin = $conn->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
 
                         <form method="POST">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                         <label class="form-label">Full Name *</label>
                                         <input type="text" class="form-control" name="name" value="<?php echo $admin['name']; ?>" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Username</label>
-                                        <input type="text" class="form-control" value="<?php echo $admin['username']; ?>" readonly>
-                                        <div class="form-text">Username cannot be changed</div>
                                     </div>
                                 </div>
                             </div>
@@ -143,13 +136,13 @@ $admin = $conn->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Phone</label>
-                                        <input type="text" class="form-control" name="contact" value="<?php echo $admin['contact']; ?>">
+                                        <input type="text" class="form-control" name="phone" value="<?php echo $admin['phone'] ?? ''; ?>">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="d-grid">
-                                <button type="submit" name="update_profile" class="btn btn-modern">
+                                <button type="submit" name="update_profile" class="btn btn-primary">
                                     <i class="fas fa-save me-2"></i>Update Profile
                                 </button>
                             </div>
@@ -208,10 +201,10 @@ $admin = $conn->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
                         $stats = $conn->query("
                             SELECT
                                 (SELECT COUNT(*) FROM members WHERE status = 'active') as active_members,
-                                (SELECT COUNT(*) FROM trainers WHERE status = 'active') as active_trainers,
-                                (SELECT COUNT(*) FROM plans WHERE status = 'active') as active_plans,
+                                (SELECT COUNT(*) FROM trainers) as active_trainers,
+                                (SELECT COUNT(*) FROM plans) as active_plans,
                                 (SELECT COUNT(*) FROM attendance WHERE DATE(date) = CURDATE()) as today_attendance,
-                                (SELECT SUM(amount) FROM payments WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)) as monthly_revenue
+                                (SELECT SUM(amount) FROM payments WHERE DATE(payment_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)) as monthly_revenue
                         ")->fetch_assoc();
                         ?>
 
@@ -238,7 +231,7 @@ $admin = $conn->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
                             </div>
                             <div class="col-md-2 col-6">
                                 <h3 class="text-secondary"><?php
-                                $total_expenses = $conn->query("SELECT SUM(amount) as total FROM expenses WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)")->fetch_assoc()['total'] ?: 0;
+                                $total_expenses = $conn->query("SELECT SUM(amount) as total FROM expenses WHERE DATE(expense_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)")->fetch_assoc()['total'] ?: 0;
                                 echo '$' . number_format($total_expenses, 2);
                                 ?></h3>
                                 <small class="text-muted">Monthly Expenses</small>

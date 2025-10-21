@@ -58,7 +58,11 @@ $plans = $conn->query("SELECT * FROM plans");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membership Plans - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 </head>
 <body>
     <div class="main-wrapper">
@@ -66,12 +70,23 @@ $plans = $conn->query("SELECT * FROM plans");
 
     <div class="page-content">
         <div class="container-fluid">
-        <h2>Membership Plans</h2>
-
-        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#planModal">Add New Plan</button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Membership Plans</h2>
+            <div>
+                <button class="btn btn-success me-2" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel me-2"></i>Export to Excel
+                </button>
+                <button class="btn btn-danger me-2" onclick="exportToPDF()">
+                    <i class="fas fa-file-pdf me-2"></i>Export to PDF
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#planModal">
+                    <i class="fas fa-plus me-2"></i>Add New Plan
+                </button>
+            </div>
+        </div>
 
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -88,7 +103,7 @@ $plans = $conn->query("SELECT * FROM plans");
                             <td><?php echo $row['id']; ?></td>
                             <td><?php echo $row['name']; ?></td>
                             <td><?php echo $row['duration_months']; ?></td>
-                            <td>$<?php echo number_format($row['amount'], 2); ?></td>
+                            <td>₹<?php echo number_format($row['amount'], 2); ?></td>
                             <td><?php echo substr($row['description'], 0, 50) . (strlen($row['description']) > 50 ? '...' : ''); ?></td>
                             <td>
                                 <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
@@ -97,6 +112,16 @@ $plans = $conn->query("SELECT * FROM plans");
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -155,13 +180,104 @@ $plans = $conn->query("SELECT * FROM plans");
         </div>
     </div>
 
+    <!-- Include libraries for export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
     <script>
+        $(document).ready(function() {
+            $('#datatables').DataTable({
+                "pagingType": "full_numbers",
+                "lengthMenu": [
+                    [10, 25, 50, -1],
+                    [10, 25, 50, "All"]
+                ],
+                responsive: true,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search records",
+                }
+            });
+
+            var table = $('#datatables').DataTable();
+        });
+
         <?php if ($plan): ?>
             document.addEventListener('DOMContentLoaded', function() {
                 var modal = new bootstrap.Modal(document.getElementById('planModal'));
                 modal.show();
             });
         <?php endif; ?>
+
+        // Export to Excel
+        function exportToExcel() {
+            const table = document.getElementById('datatables');
+            const wb = XLSX.utils.book_new();
+            
+            const clonedTable = table.cloneNode(true);
+            const rows = clonedTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                const lastCell = row.querySelector('th:last-child, td:last-child');
+                if (lastCell) lastCell.remove();
+            });
+            
+            const ws = XLSX.utils.table_to_sheet(clonedTable);
+            ws['!cols'] = [{wch: 5}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 40}];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Plans');
+            XLSX.writeFile(wb, 'Membership_Plans_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            doc.setFontSize(18);
+            doc.text('Membership Plans', 14, 15);
+            doc.setFontSize(10);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
+            
+            const table = document.getElementById('datatables');
+            const rows = [];
+            const headers = [];
+            
+            const headerCells = table.querySelectorAll('thead th');
+            headerCells.forEach((cell, index) => {
+                if (index < headerCells.length - 1) {
+                    headers.push(cell.textContent.trim());
+                }
+            });
+            
+            const bodyRows = table.querySelectorAll('tbody tr');
+            bodyRows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell, index) => {
+                    if (index < cells.length - 1) {
+                        rowData.push(cell.textContent.trim());
+                    }
+                });
+                rows.push(rowData);
+            });
+            
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 28,
+                theme: 'grid',
+                styles: { fontSize: 9, cellPadding: 2 },
+                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+            
+            doc.save('Membership_Plans_' + new Date().toISOString().slice(0,10) + '.pdf');
+        }
     </script>
         </div>
     </div>

@@ -69,9 +69,11 @@ $diet_plans = $conn->query("
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <h2><i class="fas fa-clipboard-list me-2"></i>Manage Workout & Diet Plans</h2>
 
         <?php if (isset($success)): ?>
@@ -265,5 +267,8 @@ $diet_plans = $conn->query("
             modal.show();
         }
     </script>
+        </div>
+    </div>
+    </div>
 </body>
 </html>

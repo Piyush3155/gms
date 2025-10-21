@@ -68,9 +68,11 @@ $trainer = $conn->query("SELECT * FROM trainers WHERE id = $user_id")->fetch_ass
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="row">
             <div class="col-md-4">
                 <div class="card">
@@ -282,6 +284,9 @@ $trainer = $conn->query("SELECT * FROM trainers WHERE id = $user_id")->fetch_ass
                 </div>
             </div>
         </div>
+    </div>
+        </div>
+    </div>
     </div>
 
 </body>

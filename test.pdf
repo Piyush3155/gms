@@ -1,0 +1,68 @@
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/Contents 4 0 R>>
+endobj
+4 0 obj
+<<
+<<
+/Length 86
+>>
+stream
+2 J
+0.57 w
+1 0 0 1 0 0 cm
+BT /F1 16.00 Tf ET
+BT 28.35 2339.14 Td (Hello World!) Tj ET
+
+endstream
+endobj
+endobj
+1 0 obj
+<<
+/Type /Pages
+/Kids [3]
+/Count 1
+>>
+endobj
+5 0 obj
+<</Type /Font
+/BaseFont /helveticaBold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 5 0 R
+>>
+>>
+endobj
+<<
+/Producer (FPDF 1.7)
+/CreationDate (D:20251021063739)
+>>
+<<
+/Type /Catalog
+/Pages 1 0 R
+>>
+xref
+0 6
+0000000000 65535 f 
+0000000224 00000 n 
+0000000377 00000 n 
+0000000000 00000 n 
+0000000078 00000 n 
+0000000277 00000 n 
+trailer
+<<
+/Size 6
+/Root 5 0 R
+/Info 4 0 R
+>>
+startxref
+745
+%%EOF

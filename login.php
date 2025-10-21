@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="assets/css/style.css" rel="stylesheet">
     <style>
         .login-page {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('assets/images/gym.jpg') center/cover no-repeat;
             min-height: 100vh;
             display: flex;
             align-items: center;

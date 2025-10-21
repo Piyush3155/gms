@@ -62,9 +62,11 @@ $monthly_total = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE us
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
 
-    <div class="container mt-4">
+    <div class="page-content">
+        <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-calendar-check me-2"></i>My Attendance</h2>
             <div class="d-flex gap-2">
@@ -197,5 +199,8 @@ $monthly_total = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE us
             window.location.href = `attendance.php?date=${date}`;
         }
     </script>
+        </div>
+    </div>
+    </div>
 </body>
 </html>

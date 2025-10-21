@@ -69,6 +69,12 @@
                         <span class="menu-text">Attendance</span>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/expiry_alerts.php" class="menu-link">
+                        <i class="fas fa-exclamation-triangle menu-icon"></i>
+                        <span class="menu-text">Expiry Alerts</span>
+                    </a>
+                </li>
                 <li class="menu-item has-submenu">
                     <a href="#" class="menu-link" data-bs-toggle="collapse" data-bs-target="#financeMenu">
                         <i class="fas fa-wallet menu-icon"></i>
