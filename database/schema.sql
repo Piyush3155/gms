@@ -136,3 +136,47 @@ INSERT INTO plans (name, duration_months, amount, description) VALUES
 -- Insert default gym settings
 INSERT INTO settings (gym_name, tagline, contact, address, email) VALUES
 ('FitZone Gym', 'Transform Your Body, Transform Your Life', '+1-555-0123', '123 Fitness Street, Health City, HC 12345', 'info@fitzone.com');
+
+-- More dummy data for testing
+
+-- Trainers
+INSERT INTO trainers (name, specialization, contact, email, experience, salary, join_date) VALUES
+('John Doe', 'Strength Training', '+1-555-1001', 'john.doe@fitzone.com', 5, 3000.00, '2022-01-10'),
+('Jane Smith', 'Yoga', '+1-555-1002', 'jane.smith@fitzone.com', 3, 2500.00, '2023-03-15'),
+('Mike Lee', 'Cardio', '+1-555-1003', 'mike.lee@fitzone.com', 4, 2800.00, '2021-07-20');
+
+-- Members
+INSERT INTO members (name, gender, dob, contact, email, address, join_date, plan_id, trainer_id, status, photo) VALUES
+('Alice Brown', 'female', '1995-05-12', '+1-555-2001', 'alice.brown@example.com', '456 Wellness Ave, Health City', '2024-01-05', 1, 1, 'active', 'alice.jpg'),
+('Bob Green', 'male', '1990-08-22', '+1-555-2002', 'bob.green@example.com', '789 Power St, Health City', '2024-02-10', 2, 2, 'active', 'bob.jpg'),
+('Charlie Black', 'male', '1988-11-30', '+1-555-2003', 'charlie.black@example.com', '321 Energy Rd, Health City', '2024-03-15', 3, 3, 'expired', 'charlie.jpg');
+
+-- Payments
+INSERT INTO payments (member_id, plan_id, amount, payment_date, method, invoice_no, status) VALUES
+(1, 1, 500.00, '2024-01-05', 'cash', 'INV1001', 'paid'),
+(2, 2, 1200.00, '2024-02-10', 'card', 'INV1002', 'paid'),
+(3, 3, 5000.00, '2024-03-15', 'upi', 'INV1003', 'pending');
+
+-- Attendance
+INSERT INTO attendance (user_id, role, date, check_in, check_out, status) VALUES
+(2, 'member', '2024-10-20', '08:00:00', '10:00:00', 'present'),
+(3, 'member', '2024-10-20', '09:00:00', '11:00:00', 'present'),
+(1, 'trainer', '2024-10-20', '07:30:00', '12:00:00', 'present');
+
+-- Workout Plans
+INSERT INTO workout_plans (trainer_id, member_id, description) VALUES
+(1, 1, 'Strength training: Monday, Wednesday, Friday'),
+(2, 2, 'Yoga and flexibility: Tuesday, Thursday'),
+(3, 3, 'Cardio: Daily morning sessions');
+
+-- Diet Plans
+INSERT INTO diet_plans (trainer_id, member_id, description) VALUES
+(1, 1, 'High protein, low carb diet'),
+(2, 2, 'Vegetarian diet with supplements'),
+(3, 3, 'Balanced diet with focus on hydration');
+
+-- Expenses
+INSERT INTO expenses (category, amount, expense_date, description) VALUES
+('Equipment', 1500.00, '2024-09-01', 'New dumbbells and weights'),
+('Maintenance', 500.00, '2024-09-10', 'AC repair'),
+('Marketing', 800.00, '2024-09-15', 'Social media ads');
