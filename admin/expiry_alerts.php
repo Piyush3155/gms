@@ -5,8 +5,8 @@ require_role('admin');
 // Get expiry alert days from URL parameter or default to 30 days
 $alert_days = isset($_GET['days']) ? (int)$_GET['days'] : 30;
 
-// Get members with expiring memberships
-$expiring_members = $conn->query("
+// Get members with expiring memberships using prepared statement
+$sql = "
     SELECT
         m.id,
         m.name,
@@ -28,13 +28,20 @@ $expiring_members = $conn->query("
         GROUP BY member_id
     ) latest_payment ON m.id = latest_payment.member_id
     WHERE m.status = 'active'
-    AND DATEDIFF(DATE_ADD(COALESCE(latest_payment.payment_date, m.join_date), INTERVAL p.duration_months MONTH), CURDATE()) BETWEEN 0 AND $alert_days
+    AND DATEDIFF(DATE_ADD(COALESCE(latest_payment.payment_date, m.join_date), INTERVAL p.duration_months MONTH), CURDATE()) <= ?
     ORDER BY days_remaining ASC
-");
+";
+$stmt = $conn->prepare($sql);
+if (!$stmt) { die('Prepare failed: ' . $conn->error); }
+$stmt->bind_param('i', $alert_days);
+$stmt->execute();
+$expiring_members = $stmt->get_result();
 
-// Get summary stats
-$critical_count = $conn->query("
-    SELECT COUNT(*) as count FROM (
+// Get summary stats using prepared statements
+// Critical: <= 7 days
+$critical_sql = "
+    SELECT COUNT(*) as count
+    FROM (
         SELECT m.id,
                DATEDIFF(DATE_ADD(COALESCE(lp.payment_date, m.join_date), INTERVAL p.duration_months MONTH), CURDATE()) as days_remaining
         FROM members m
@@ -46,11 +53,20 @@ $critical_count = $conn->query("
             GROUP BY member_id
         ) lp ON m.id = lp.member_id
         WHERE m.status = 'active'
-    ) t WHERE days_remaining <= 7
-")->fetch_assoc()['count'];
+    ) t
+    WHERE days_remaining <= 7
+";
+$critical_stmt = $conn->prepare($critical_sql);
+if (!$critical_stmt) { die('Prepare failed: ' . $conn->error); }
+$critical_stmt->execute();
+$critical_result = $critical_stmt->get_result();
+$critical_row = $critical_result->fetch_assoc();
+$critical_count = (int)$critical_row['count'];
 
-$warning_count = $conn->query("
-    SELECT COUNT(*) as count FROM (
+// Warning: 8 - 30 days
+$warning_sql = "
+    SELECT COUNT(*) as count
+    FROM (
         SELECT m.id,
                DATEDIFF(DATE_ADD(COALESCE(lp.payment_date, m.join_date), INTERVAL p.duration_months MONTH), CURDATE()) as days_remaining
         FROM members m
@@ -62,12 +78,18 @@ $warning_count = $conn->query("
             GROUP BY member_id
         ) lp ON m.id = lp.member_id
         WHERE m.status = 'active'
-    ) t WHERE days_remaining BETWEEN 8 AND 30
-")->fetch_assoc()['count'];
+    ) t
+    WHERE days_remaining BETWEEN 8 AND 30
+";
+$warning_stmt = $conn->prepare($warning_sql);
+if (!$warning_stmt) { die('Prepare failed: ' . $conn->error); }
+$warning_stmt->execute();
+$warning_result = $warning_stmt->get_result();
+$warning_row = $warning_result->fetch_assoc();
+$warning_count = (int)$warning_row['count'];
 
 $total_expiring = $critical_count + $warning_count;
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -81,7 +103,6 @@ $total_expiring = $critical_count + $warning_count;
 <body>
     <div class="main-wrapper">
     <?php include '../includes/header.php'; ?>
-
     <div class="page-content">
         <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -101,7 +122,6 @@ $total_expiring = $critical_count + $warning_count;
                 </button>
             </div>
         </div>
-
         <!-- Alert Summary -->
         <div class="row mb-4">
             <div class="col-md-4">
@@ -132,7 +152,6 @@ $total_expiring = $critical_count + $warning_count;
                 </div>
             </div>
         </div>
-
         <!-- Expiring Members Table -->
         <div class="card">
             <div class="card-header">
@@ -158,7 +177,7 @@ $total_expiring = $critical_count + $warning_count;
                                 $days_remaining = $member['days_remaining'];
                                 $status_class = $days_remaining <= 7 ? 'danger' : ($days_remaining <= 30 ? 'warning' : 'info');
                                 $status_text = $days_remaining <= 7 ? 'Critical' : ($days_remaining <= 30 ? 'Warning' : 'Info');
-
+                                
                                 // Create WhatsApp message
                                 $wa_number = preg_replace('/[^0-9]/', '', $member['contact']); // Remove non-numeric characters
                                 $message = urlencode("Dear {$member['name']}, your {$member['plan_name']} membership is expiring on {$member['expiry_date']} ({$days_remaining} days remaining). Please renew to continue your fitness journey. Visit us soon!");
@@ -196,75 +215,115 @@ $total_expiring = $critical_count + $warning_count;
             </div>
         </div>
     </div>
-
-    <script>
-        function changeAlertDays(days) {
+    </div>
+        function changeAlertDays(days) {le; ?>
             window.location.href = `expiry_alerts.php?days=${days}`;
-        }
-
+        }           </table>
+                </div>
         function sendEmail(email, name, expiryDate, daysRemaining) {
-            // This would typically send an AJAX request to a PHP script
-            // For now, we'll show an alert
-            alert(`Email would be sent to ${email} for ${name}'s expiring membership on ${expiryDate} (${daysRemaining} days remaining)`);
+            fetch('send_expiry_email.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',pt>
+                },        function changeAlertDays(days) {
+                body: JSON.stringify({n.href = `expiry_alerts.php?days=${days}`;
+                    member_id: 0, // Not used in current script, but included for future
+                    name: name,
+                    email: email,yDate, daysRemaining) {
+                    expiry_date: expiryDate,            // Send AJAX request to server to send email
+                    days_remaining: daysRemaining
+                })
+            })'Content-Type', 'application/x-www-form-urlencoded');
+            .then(response => response.json())
+            .then(data => {quest.DONE) {
+                if (data.success) {     if (xhr.status === 200) {
+                    alert('Email sent successfully!');                        alert('Email sent successfully!');
+                } else {
+                    alert('Failed to send email: ' + data.message);
+                }                    }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);   xhr.send(`email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&expiryDate=${encodeURIComponent(expiryDate)}&daysRemaining=${encodeURIComponent(daysRemaining)}`);
+            });        }
         }
 
         // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('expiryTable');
+        function exportToExcel() {expiryTable');
+            const table = document.getElementById('expiryTable');            const wb = XLSX.utils.book_new();
             const wb = XLSX.utils.book_new();
 
-            const clonedTable = table.cloneNode(true);
+            const clonedTable = table.cloneNode(true);able.querySelectorAll('tr');
             const rows = clonedTable.querySelectorAll('tr');
             rows.forEach(row => {
-                const lastCell = row.querySelector('th:last-child, td:last-child');
+                const lastCell = row.querySelector('th:last-child, td:last-child');                if (lastCell) lastCell.remove();
                 if (lastCell) lastCell.remove();
             });
-
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
+ls.table_to_sheet(clonedTable);
+            const ws = XLSX.utils.table_to_sheet(clonedTable);            ws['!cols'] = [{wch: 20}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 10}];
             ws['!cols'] = [{wch: 20}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 10}];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Expiry_Alerts');
+Expiry_Alerts');
+            XLSX.utils.book_append_sheet(wb, ws, 'Expiry_Alerts');rts_' + new Date().toISOString().slice(0,10) + '.xlsx');
             XLSX.writeFile(wb, 'Membership_Expiry_Alerts_' + new Date().toISOString().slice(0,10) + '.xlsx');
         }
-
-        // Export to PDF
+rt to PDF
+        // Export to PDF        function exportToPDF() {
         function exportToPDF() {
-            const { jsPDF } = window.jspdf;
+            const { jsPDF } = window.jspdf;, 'mm', 'a4');
             const doc = new jsPDF('l', 'mm', 'a4');
 
-            doc.setFontSize(18);
+            doc.setFontSize(18); 14, 15);
             doc.text('Membership Expiry Alerts', 14, 15);
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
+            doc.setFontSize(10);(), 14, 22);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);'Alert Period: Next <?php echo $alert_days; ?> days', 14, 27);
             doc.text('Alert Period: Next <?php echo $alert_days; ?> days', 14, 27);
-
-            const table = document.getElementById('expiryTable');
-            const rows = [];
+getElementById('expiryTable');
+            const table = document.getElementById('expiryTable');st rows = [];
+            const rows = [];            const headers = [];
             const headers = [];
-
-            const headerCells = table.querySelectorAll('thead th');
-            headerCells.forEach((cell, index) => {
-                if (index < headerCells.length - 1) {
+table.querySelectorAll('thead th');
+            const headerCells = table.querySelectorAll('thead th');Each((cell, index) => {
+            headerCells.forEach((cell, index) => { headerCells.length - 1) {
+                if (index < headerCells.length - 1) {sh(cell.textContent.trim());
                     headers.push(cell.textContent.trim());
                 }
             });
-
-            const bodyRows = table.querySelectorAll('tbody tr');
+st bodyRows = table.querySelectorAll('tbody tr');
+            const bodyRows = table.querySelectorAll('tbody tr');            bodyRows.forEach(row => {
             bodyRows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) {
+                const rowData = [];       const cells = row.querySelectorAll('td');
+                const cells = row.querySelectorAll('td');   cells.forEach((cell, index) => {
+                cells.forEach((cell, index) => {                    if (index < cells.length - 1) {
+                    if (index < cells.length - 1) {.textContent.trim());
                         rowData.push(cell.textContent.trim());
                     }
                 });
-                rows.push(rowData);
+                rows.push(rowData);;
             });
+  doc.autoTable({
+            doc.autoTable({         head: [headers],
+                head: [headers],         body: rows,
 
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: 33,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html></body>    </div>    </div>        </div>    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>    <!-- Include libraries for export -->    </script>        }            doc.save('Membership_Expiry_Alerts_' + new Date().toISOString().slice(0,10) + '.pdf');            });                alternateRowStyles: { fillColor: [245, 247, 250] }                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },                styles: { fontSize: 8, cellPadding: 2 },                theme: 'grid',                startY: 33,                body: rows,                startY: 33,
                 theme: 'grid',
                 styles: { fontSize: 8, cellPadding: 2 },
                 headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
