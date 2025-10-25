@@ -199,7 +199,6 @@ $monthly_total = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE us
             window.location.href = `attendance.php?date=${date}`;
         }
     </script>
-        </div>
     </div>
     </div>
 </body>

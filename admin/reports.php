@@ -55,13 +55,40 @@ $trainer_performance = $conn->query("
     ORDER BY member_count DESC
 ");
 
-// Get expiring memberships (next 30 days)
-$expiring_memberships = $conn->query("
-    SELECT m.name, m.email, p.name as plan_name, DATE_ADD(m.join_date, INTERVAL p.duration_months MONTH) as expiry_date
-    FROM members m
-    JOIN plans p ON m.plan_id = p.id
-    WHERE DATE_ADD(m.join_date, INTERVAL p.duration_months MONTH) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-    ORDER BY expiry_date
+// Get equipment status distribution
+$equipment_status = $conn->query("
+    SELECT status, COUNT(*) as count
+    FROM equipment
+    GROUP BY status
+");
+
+// Get class booking statistics
+$class_bookings = $conn->query("
+    SELECT DATE_FORMAT(gc.class_date, '%Y-%m') as month, COUNT(cb.id) as bookings
+    FROM group_classes gc
+    LEFT JOIN class_bookings cb ON gc.id = cb.class_id AND cb.status IN ('confirmed', 'attended')
+    WHERE gc.class_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+    GROUP BY DATE_FORMAT(gc.class_date, '%Y-%m')
+    ORDER BY month
+");
+
+// Get member progress statistics (average weight change)
+$progress_stats = $conn->query("
+    SELECT
+        AVG(CASE WHEN measurement_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) THEN weight END) -
+        AVG(CASE WHEN measurement_date >= DATE_SUB(CURDATE(), INTERVAL 60 DAY) AND measurement_date < DATE_SUB(CURDATE(), INTERVAL 30 DAY) THEN weight END) as avg_weight_change
+    FROM member_progress
+    WHERE weight IS NOT NULL
+");
+
+// Get popular classes
+$popular_classes = $conn->query("
+    SELECT gc.name, COUNT(cb.id) as booking_count
+    FROM group_classes gc
+    LEFT JOIN class_bookings cb ON gc.id = cb.class_id AND cb.status IN ('confirmed', 'attended')
+    GROUP BY gc.id, gc.name
+    ORDER BY booking_count DESC
+    LIMIT 5
 ");
 
 // Convert data to JSON for JavaScript
@@ -88,6 +115,21 @@ while ($row = $membership_status->fetch_assoc()) {
 $trainer_data = [];
 while ($row = $trainer_performance->fetch_assoc()) {
     $trainer_data[] = $row;
+}
+
+$equipment_data = [];
+while ($row = $equipment_status->fetch_assoc()) {
+    $equipment_data[] = $row;
+}
+
+$class_booking_data = [];
+while ($row = $class_bookings->fetch_assoc()) {
+    $class_booking_data[] = $row;
+}
+
+$popular_classes_data = [];
+while ($row = $popular_classes->fetch_assoc()) {
+    $popular_classes_data[] = $row;
 }
 ?>
 
@@ -117,6 +159,10 @@ while ($row = $trainer_performance->fetch_assoc()) {
             $active_members = $conn->query("SELECT COUNT(*) as count FROM members WHERE status='active'")->fetch_assoc()['count'];
             $total_trainers = $conn->query("SELECT COUNT(*) as count FROM trainers")->fetch_assoc()['count'];
             $total_revenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid'")->fetch_assoc()['total'] ?? 0;
+            $total_equipment = $conn->query("SELECT COUNT(*) as count FROM equipment")->fetch_assoc()['count'];
+            $available_equipment = $conn->query("SELECT COUNT(*) as count FROM equipment WHERE status='available'")->fetch_assoc()['count'];
+            $total_classes = $conn->query("SELECT COUNT(*) as count FROM group_classes WHERE class_date >= CURDATE()")->fetch_assoc()['count'];
+            $total_bookings = $conn->query("SELECT COUNT(*) as count FROM class_bookings WHERE status IN ('confirmed', 'attended')")->fetch_assoc()['count'];
             ?>
             <div class="col-md-3">
                 <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
@@ -137,16 +183,18 @@ while ($row = $trainer_performance->fetch_assoc()) {
             <div class="col-md-3">
                 <div class="card text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                     <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-user-tie me-2"></i>Total Trainers</h5>
-                        <h2><?php echo $total_trainers; ?></h2>
+                        <h5 class="card-title"><i class="fas fa-tools me-2"></i>Equipment</h5>
+                        <h2><?php echo $available_equipment; ?>/<?php echo $total_equipment; ?></h2>
+                        <small>Available</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card text-white" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
                     <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-dollar-sign me-2"></i>Total Revenue</h5>
-                        <h2>$<?php echo number_format($total_revenue, 0); ?>K</h2>
+                        <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i>Class Bookings</h5>
+                        <h2><?php echo $total_bookings; ?></h2>
+                        <small>This Month</small>
                     </div>
                 </div>
             </div>
@@ -205,6 +253,30 @@ while ($row = $trainer_performance->fetch_assoc()) {
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Equipment Status Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="equipmentChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Class Bookings (Last 6 Months)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="classBookingChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
                         <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>Trainer Performance</h5>
                     </div>
                     <div class="card-body">
@@ -215,26 +287,24 @@ while ($row = $trainer_performance->fetch_assoc()) {
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Expiring Memberships (Next 30 Days)</h5>
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Popular Classes</h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Member</th>
-                                        <th>Plan</th>
-                                        <th>Expiry Date</th>
+                                        <th>Class Name</th>
+                                        <th>Total Bookings</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($expiring = $expiring_memberships->fetch_assoc()): ?>
+                                    <?php foreach ($popular_classes_data as $class): ?>
                                         <tr>
-                                            <td><?php echo $expiring['name']; ?></td>
-                                            <td><?php echo $expiring['plan_name']; ?></td>
-                                            <td><span class="badge bg-warning"><?php echo date('M j, Y', strtotime($expiring['expiry_date'])); ?></span></td>
+                                            <td><?php echo $class['name']; ?></td>
+                                            <td><span class="badge bg-primary"><?php echo $class['booking_count']; ?></span></td>
                                         </tr>
-                                    <?php endwhile; ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -355,7 +425,7 @@ while ($row = $trainer_performance->fetch_assoc()) {
         const trainerCtx = document.getElementById('trainerChart').getContext('2d');
         const trainerData = <?php echo json_encode($trainer_data); ?>;
         new Chart(trainerCtx, {
-            type: 'horizontalBar',
+            type: 'bar',
             data: {
                 labels: trainerData.map(item => item.name),
                 datasets: [{
@@ -365,13 +435,62 @@ while ($row = $trainer_performance->fetch_assoc()) {
                 }]
             },
             options: {
-                indexAxis: 'y',
                 responsive: true,
                 scales: {
-                    x: { beginAtZero: true }
+                    y: { beginAtZero: true }
                 },
                 plugins: {
                     legend: { display: false }
+                }
+            }
+        });
+
+        // Equipment Status Chart
+        const equipmentCtx = document.getElementById('equipmentChart').getContext('2d');
+        const equipmentData = <?php echo json_encode($equipment_data); ?>;
+        new Chart(equipmentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: equipmentData.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('_', ' ')),
+                datasets: [{
+                    data: equipmentData.map(item => item.count),
+                    backgroundColor: ['#43e97b', '#f5576c', '#f093fb', '#4facfe', '#667eea']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Class Booking Chart
+        const classBookingCtx = document.getElementById('classBookingChart').getContext('2d');
+        const classBookingData = <?php echo json_encode($class_booking_data); ?>;
+        new Chart(classBookingCtx, {
+            type: 'line',
+            data: {
+                labels: classBookingData.map(item => {
+                    const date = new Date(item.month + '-01');
+                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Class Bookings',
+                    data: classBookingData.map(item => item.bookings),
+                    borderColor: '#f093fb',
+                    backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
                 }
             }
         });

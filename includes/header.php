@@ -35,7 +35,7 @@
     <div class="sidebar-menu">
         <ul class="menu-list">
             <li class="menu-item">
-                <a href="<?php echo SITE_URL; ?>dashboard.php" class="menu-link active">
+                <a href="<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/index.php" class="menu-link active">
                     <i class="fas fa-home menu-icon"></i>
                     <span class="menu-text">Dashboard</span>
                 </a>
@@ -70,9 +70,39 @@
                     </a>
                 </li>
                 <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/qr_scanner.php" class="menu-link">
+                        <i class="fas fa-qrcode menu-icon"></i>
+                        <span class="menu-text">QR Scanner</span>
+                    </a>
+                </li>
+                <li class="menu-item">
                     <a href="<?php echo SITE_URL; ?>admin/expiry_alerts.php" class="menu-link">
                         <i class="fas fa-exclamation-triangle menu-icon"></i>
                         <span class="menu-text">Expiry Alerts</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/equipment.php" class="menu-link">
+                        <i class="fas fa-tools menu-icon"></i>
+                        <span class="menu-text">Equipment</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/member_progress.php" class="menu-link">
+                        <i class="fas fa-chart-line menu-icon"></i>
+                        <span class="menu-text">Progress Tracking</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/group_classes.php" class="menu-link">
+                        <i class="fas fa-calendar-alt menu-icon"></i>
+                        <span class="menu-text">Group Classes</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/notifications.php" class="menu-link">
+                        <i class="fas fa-bell menu-icon"></i>
+                        <span class="menu-text">Notifications</span>
                     </a>
                 </li>
                 <li class="menu-item has-submenu">
@@ -93,6 +123,18 @@
                     <a href="<?php echo SITE_URL; ?>admin/reports.php" class="menu-link">
                         <i class="fas fa-chart-line menu-icon"></i>
                         <span class="menu-text">Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/backup.php" class="menu-link">
+                        <i class="fas fa-database menu-icon"></i>
+                        <span class="menu-text">Backup & Restore</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/branches.php" class="menu-link">
+                        <i class="fas fa-building menu-icon"></i>
+                        <span class="menu-text">Branches</span>
                     </a>
                 </li>
                 <li class="menu-item">
@@ -145,6 +187,12 @@
                         <span class="menu-text">Diet Plans</span>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>member/classes.php" class="menu-link">
+                        <i class="fas fa-calendar-check menu-icon"></i>
+                        <span class="menu-text">Group Classes</span>
+                    </a>
+                </li>
             <?php endif; ?>
         </ul>
     </div>
@@ -188,9 +236,31 @@
         <div class="header-right">
             <div class="header-actions">
                 <div class="header-action-item notification-item">
-                    <button class="action-btn">
+                    <button class="action-btn" onclick="window.location.href='<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/index.php'">
                         <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
+                        <?php
+                        // Quick notification count for header
+                        if ($_SESSION['user_role'] == 'admin') {
+                            $notification_count = 0;
+
+                            // Expiring memberships
+                            $expiry_date = date('Y-m-d', strtotime('+7 days'));
+                            $result = $conn->query("SELECT COUNT(*) as total FROM members WHERE expiry_date <= '$expiry_date' AND status = 'active'");
+                            $notification_count += $result->fetch_assoc()['total'];
+
+                            // Pending feedback
+                            $result = $conn->query("SELECT COUNT(*) as total FROM feedback WHERE status = 'pending'");
+                            $notification_count += $result->fetch_assoc()['total'];
+
+                            // Equipment maintenance due
+                            $result = $conn->query("SELECT COUNT(*) as total FROM equipment WHERE next_maintenance <= CURDATE() AND status != 'maintenance'");
+                            $notification_count += $result->fetch_assoc()['total'];
+
+                            if ($notification_count > 0) {
+                                echo '<span class="notification-badge">' . $notification_count . '</span>';
+                            }
+                        }
+                        ?>
                     </button>
                 </div>
 
@@ -225,7 +295,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="<?php echo SITE_URL; ?>dashboard.php">
+                                <a class="dropdown-item" href="<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/index.php">
                                     <i class="fas fa-home"></i>Dashboard
                                 </a>
                             </li>

@@ -285,7 +285,6 @@ $absent_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE dat
             doc.save('Attendance_<?php echo $selected_date; ?>.pdf');
         }
     </script>
-        </div>
     </div>
     </div>
 </body>

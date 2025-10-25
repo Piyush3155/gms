@@ -252,10 +252,86 @@ $member = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name 
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- QR Code Section -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-qrcode me-2"></i>My QR Code</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <?php if (!empty($member['qr_code'])): ?>
+                            <div id="qrcode-container" class="mb-3"></div>
+                            <p class="text-muted small">Use this QR code for quick attendance check-in/check-out</p>
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadQR()">
+                                <i class="fas fa-download me-1"></i>Download QR Code
+                            </button>
+                        <?php else: ?>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                QR code not available. Please contact administrator.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>QR Code Instructions</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Show this QR code at the gym entrance for attendance
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Works for both check-in and check-out
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Keep your membership active to use this feature
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-info-circle text-info me-2"></i>
+                                Contact staff if you need a new QR code
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        // Generate QR Code
+        <?php if (!empty($member['qr_code'])): ?>
+        QRCode.toCanvas(document.getElementById('qrcode-container'), '<?php echo $member['qr_code']; ?>', {
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        }, function (error) {
+            if (error) console.error(error);
+        });
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode-container canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'my-qr-code.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+        <?php endif; ?>
+    </script>
 </body>
 </html>

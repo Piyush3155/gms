@@ -64,9 +64,46 @@ function get_user_role() {
     return $_SESSION['user_role'] ?? null;
 }
 
+function get_user_role_id() {
+    return $_SESSION['user_role_id'] ?? null;
+}
+
+function has_permission($module, $action) {
+    $role_id = get_user_role_id();
+    if (!$role_id) return false;
+    
+    global $conn;
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM role_permissions rp 
+                           JOIN permissions p ON rp.permission_id = p.id 
+                           WHERE rp.role_id = ? AND p.module = ? AND p.action = ?");
+    $stmt->bind_param("iss", $role_id, $module, $action);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $count = $result->fetch_assoc()['count'];
+    $stmt->close();
+    return $count > 0;
+}
+
+function require_permission($module, $action) {
+    if (!is_logged_in() || !has_permission($module, $action)) {
+        redirect('login.php');
+    }
+}
+
 function require_role($role) {
     if (!is_logged_in() || get_user_role() !== $role) {
         redirect('login.php');
     }
+}
+
+function log_activity($action, $module = null, $details = null) {
+    global $conn;
+    $user_id = $_SESSION['user_id'] ?? null;
+    $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO activity_log (user_id, action, module, details, ip_address) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("issss", $user_id, $action, $module, $details, $ip);
+    $stmt->execute();
+    $stmt->close();
 }
 ?>

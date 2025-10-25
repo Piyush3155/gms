@@ -171,7 +171,6 @@ $monthly_stats = $conn->query("
             }
         });
     </script>
-        </div>
     </div>
     </div>
 </body>

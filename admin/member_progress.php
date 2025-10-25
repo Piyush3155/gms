@@ -5,68 +5,59 @@ require_role('admin');
 // Handle delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = $_GET['delete'];
-    $conn->query("DELETE FROM members WHERE id = $id");
-    redirect('members.php');
+    $conn->query("DELETE FROM member_progress WHERE id = $id");
+    redirect('member_progress.php');
 }
 
 // Handle add/edit
 $errors = [];
-$member = null;
+$progress = null;
 
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     $id = $_GET['edit'];
-    $result = $conn->query("SELECT * FROM members WHERE id = $id");
-    $member = $result->fetch_assoc();
+    $result = $conn->query("SELECT mp.*, m.name as member_name FROM member_progress mp JOIN members m ON mp.member_id = m.id WHERE mp.id = $id");
+    $progress = $result->fetch_assoc();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = sanitize($_POST['name']);
-    $gender = sanitize($_POST['gender']);
-    $dob = sanitize($_POST['dob']);
-    $contact = sanitize($_POST['contact']);
-    $email = sanitize($_POST['email']);
-    $address = sanitize($_POST['address']);
-    $join_date = sanitize($_POST['join_date']);
-    $expiry_date = sanitize($_POST['expiry_date']);
-    $plan_id = sanitize($_POST['plan_id']);
-    $trainer_id = sanitize($_POST['trainer_id']);
-    $status = sanitize($_POST['status']);
+    $member_id = sanitize($_POST['member_id']);
+    $measurement_date = sanitize($_POST['measurement_date']);
+    $weight = !empty($_POST['weight']) ? sanitize($_POST['weight']) : null;
+    $height = !empty($_POST['height']) ? sanitize($_POST['height']) : null;
+    $chest = !empty($_POST['chest']) ? sanitize($_POST['chest']) : null;
+    $waist = !empty($_POST['waist']) ? sanitize($_POST['waist']) : null;
+    $hips = !empty($_POST['hips']) ? sanitize($_POST['hips']) : null;
+    $biceps = !empty($_POST['biceps']) ? sanitize($_POST['biceps']) : null;
+    $thighs = !empty($_POST['thighs']) ? sanitize($_POST['thighs']) : null;
+    $notes = sanitize($_POST['notes']);
 
-    if (empty($name) || empty($email)) {
-        $errors[] = "Name and email are required.";
+    if (empty($member_id) || empty($measurement_date)) {
+        $errors[] = "Member and measurement date are required.";
     } else {
-        if ($member) {
+        if ($progress) {
             // Update
-            $stmt = $conn->prepare("UPDATE members SET name=?, gender=?, dob=?, contact=?, email=?, address=?, join_date=?, expiry_date=?, plan_id=?, trainer_id=?, status=? WHERE id=?");
-            $stmt->bind_param("sssssssssssi", $name, $gender, $dob, $contact, $email, $address, $join_date, $expiry_date, $plan_id, $trainer_id, $status, $member['id']);
+            $stmt = $conn->prepare("UPDATE member_progress SET member_id=?, measurement_date=?, weight=?, height=?, chest=?, waist=?, hips=?, biceps=?, thighs=?, notes=? WHERE id=?");
+            $stmt->bind_param("issdddddddsi", $member_id, $measurement_date, $weight, $height, $chest, $waist, $hips, $biceps, $thighs, $notes, $progress['id']);
         } else {
             // Insert
-            $stmt = $conn->prepare("INSERT INTO members (name, gender, dob, contact, email, address, join_date, expiry_date, plan_id, trainer_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssssssss", $name, $gender, $dob, $contact, $email, $address, $join_date, $expiry_date, $plan_id, $trainer_id, $status);
+            $stmt = $conn->prepare("INSERT INTO member_progress (member_id, measurement_date, weight, height, chest, waist, hips, biceps, thighs, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("issddddddd", $member_id, $measurement_date, $weight, $height, $chest, $waist, $hips, $biceps, $thighs, $notes);
         }
 
         if ($stmt->execute()) {
-            if (!$member) {
-                // New member added - generate admission receipt
-                $new_member_id = $conn->insert_id;
-                // Redirect to generate PDF receipt
-                redirect("generate_admission_receipt.php?member_id=$new_member_id");
-            } else {
-                redirect('members.php');
-            }
+            redirect('member_progress.php');
         } else {
-            $errors[] = "Error saving member.";
+            $errors[] = "Error saving progress record.";
         }
         $stmt->close();
     }
 }
 
-// Get all members
-$members = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name FROM members m LEFT JOIN plans p ON m.plan_id = p.id LEFT JOIN trainers t ON m.trainer_id = t.id");
+// Get all progress records with member names
+$progress_list = $conn->query("SELECT mp.*, m.name as member_name FROM member_progress mp JOIN members m ON mp.member_id = m.id ORDER BY mp.measurement_date DESC");
 
-// Get plans and trainers for dropdowns
-$plans = $conn->query("SELECT id, name FROM plans");
-$trainers = $conn->query("SELECT id, name FROM trainers");
+// Get members for dropdown
+$members = $conn->query("SELECT id, name FROM members ORDER BY name");
 ?>
 
 <!DOCTYPE html>
@@ -74,13 +65,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Management - <?php echo SITE_NAME; ?></title>
+    <title>Member Progress Tracking - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
@@ -91,7 +80,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
     <div class="page-content">
         <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Member Management</h2>
+            <h2 class="mb-0">Member Progress Tracking</h2>
             <div>
                 <button class="btn btn-success me-2" onclick="exportToExcel()">
                     <i class="fas fa-file-excel me-2"></i>Export to Excel
@@ -99,8 +88,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                 <button class="btn btn-danger me-2" onclick="exportToPDF()">
                     <i class="fas fa-file-pdf me-2"></i>Export to PDF
                 </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#memberModal">
-                    <i class="fas fa-plus me-2"></i>Add New Member
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#progressModal">
+                    <i class="fas fa-plus me-2"></i>Add Progress Record
                 </button>
             </div>
         </div>
@@ -110,29 +99,31 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Contact</th>
-                        <th>Plan</th>
-                        <th>Expiry Date</th>
-                        <th>Status</th>
+                        <th>Member</th>
+                        <th>Date</th>
+                        <th>Weight (kg)</th>
+                        <th>Chest (cm)</th>
+                        <th>Waist (cm)</th>
+                        <th>Hips (cm)</th>
+                        <th>Biceps (cm)</th>
+                        <th>Notes</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = $members->fetch_assoc()): ?>
+                    <?php while ($row = $progress_list->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo $row['id']; ?></td>
-                            <td><?php echo $row['name']; ?></td>
-                            <td><?php echo $row['email']; ?></td>
-                            <td><?php echo $row['contact']; ?></td>
-                            <td><?php echo $row['plan_name']; ?></td>
-                            <td><?php echo $row['expiry_date'] ? date('M d, Y', strtotime($row['expiry_date'])) : 'N/A'; ?></td>
-                            <td><span class="badge bg-<?php echo $row['status'] == 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($row['status']); ?></span></td>
+                            <td><?php echo $row['member_name']; ?></td>
+                            <td><?php echo date('M d, Y', strtotime($row['measurement_date'])); ?></td>
+                            <td><?php echo $row['weight'] ? $row['weight'] . ' kg' : '-'; ?></td>
+                            <td><?php echo $row['chest'] ? $row['chest'] . ' cm' : '-'; ?></td>
+                            <td><?php echo $row['waist'] ? $row['waist'] . ' cm' : '-'; ?></td>
+                            <td><?php echo $row['hips'] ? $row['hips'] . ' cm' : '-'; ?></td>
+                            <td><?php echo $row['biceps'] ? $row['biceps'] . ' cm' : '-'; ?></td>
+                            <td><?php echo $row['notes'] ? substr($row['notes'], 0, 50) . (strlen($row['notes']) > 50 ? '...' : '') : '-'; ?></td>
                             <td>
                                 <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="renew_membership.php?member_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success" title="Renew Membership"><i class="bi bi-arrow-clockwise"></i></a>
-                                <a href="generate_admission_receipt.php?member_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-info" title="Receipt" target="_blank"><i class="bi bi-receipt"></i></a>
                                 <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
@@ -148,18 +139,20 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                         <th></th>
                         <th></th>
                         <th></th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
 
-    <!-- Member Modal -->
-    <div class="modal fade" id="memberModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <!-- Progress Modal -->
+    <div class="modal fade" id="progressModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $member ? 'Edit' : 'Add'; ?> Member</h5>
+                    <h5 class="modal-title"><?php echo $progress ? 'Edit' : 'Add'; ?> Progress Record</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST">
@@ -177,34 +170,23 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Name *</label>
-                                    <input type="text" class="form-control" name="name" value="<?php echo $member['name'] ?? ''; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Email *</label>
-                                    <input type="email" class="form-control" name="email" value="<?php echo $member['email'] ?? ''; ?>" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Gender</label>
-                                    <select class="form-control" name="gender">
-                                        <option value="">Select Gender</option>
-                                        <option value="male" <?php echo ($member['gender'] ?? '') == 'male' ? 'selected' : ''; ?>>Male</option>
-                                        <option value="female" <?php echo ($member['gender'] ?? '') == 'female' ? 'selected' : ''; ?>>Female</option>
-                                        <option value="other" <?php echo ($member['gender'] ?? '') == 'other' ? 'selected' : ''; ?>>Other</option>
+                                    <label class="form-label">Member *</label>
+                                    <select class="form-control" name="member_id" required>
+                                        <option value="">Select Member</option>
+                                        <?php
+                                        $members->data_seek(0);
+                                        while ($member = $members->fetch_assoc()): ?>
+                                            <option value="<?php echo $member['id']; ?>" <?php echo ($progress && $progress['member_id'] == $member['id']) ? 'selected' : ''; ?>>
+                                                <?php echo $member['name']; ?>
+                                            </option>
+                                        <?php endwhile; ?>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Date of Birth</label>
-                                    <input type="date" class="form-control" name="dob" value="<?php echo $member['dob'] ?? ''; ?>">
+                                    <label class="form-label">Measurement Date *</label>
+                                    <input type="date" class="form-control" name="measurement_date" value="<?php echo $progress['measurement_date'] ?? date('Y-m-d'); ?>" required>
                                 </div>
                             </div>
                         </div>
@@ -212,62 +194,57 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Contact</label>
-                                    <input type="text" class="form-control" name="contact" value="<?php echo $member['contact'] ?? ''; ?>">
+                                    <label class="form-label">Weight (kg)</label>
+                                    <input type="number" class="form-control" name="weight" value="<?php echo $progress['weight'] ?? ''; ?>" step="0.1" placeholder="e.g., 70.5">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Join Date</label>
-                                    <input type="date" class="form-control" name="join_date" value="<?php echo $member['join_date'] ?? date('Y-m-d'); ?>" required>
+                                    <label class="form-label">Height (cm)</label>
+                                    <input type="number" class="form-control" name="height" value="<?php echo $progress['height'] ?? ''; ?>" step="0.1" placeholder="e.g., 170.0">
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Chest (cm)</label>
+                                    <input type="number" class="form-control" name="chest" value="<?php echo $progress['chest'] ?? ''; ?>" step="0.1">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Waist (cm)</label>
+                                    <input type="number" class="form-control" name="waist" value="<?php echo $progress['waist'] ?? ''; ?>" step="0.1">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Hips (cm)</label>
+                                    <input type="number" class="form-control" name="hips" value="<?php echo $progress['hips'] ?? ''; ?>" step="0.1">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Biceps (cm)</label>
+                                    <input type="number" class="form-control" name="biceps" value="<?php echo $progress['biceps'] ?? ''; ?>" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Expiry Date</label>
-                                    <input type="date" class="form-control" name="expiry_date" value="<?php echo $member['expiry_date'] ?? ''; ?>">
+                                    <label class="form-label">Thighs (cm)</label>
+                                    <input type="number" class="form-control" name="thighs" value="<?php echo $progress['thighs'] ?? ''; ?>" step="0.1">
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Address</label>
-                            <textarea class="form-control" name="address" rows="3"><?php echo $member['address'] ?? ''; ?></textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Plan</label>
-                                    <select class="form-control" name="plan_id">
-                                        <option value="">Select Plan</option>
-                                        <?php while ($plan = $plans->fetch_assoc()): ?>
-                                            <option value="<?php echo $plan['id']; ?>" <?php echo ($member['plan_id'] ?? '') == $plan['id'] ? 'selected' : ''; ?>><?php echo $plan['name']; ?></option>
-                                        <?php endwhile; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Trainer</label>
-                                    <select class="form-control" name="trainer_id">
-                                        <option value="">Select Trainer</option>
-                                        <?php while ($trainer = $trainers->fetch_assoc()): ?>
-                                            <option value="<?php echo $trainer['id']; ?>" <?php echo ($member['trainer_id'] ?? '') == $trainer['id'] ? 'selected' : ''; ?>><?php echo $trainer['name']; ?></option>
-                                        <?php endwhile; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Status</label>
-                                    <select class="form-control" name="status">
-                                        <option value="active" <?php echo ($member['status'] ?? 'active') == 'active' ? 'selected' : ''; ?>>Active</option>
-                                        <option value="expired" <?php echo ($member['status'] ?? '') == 'expired' ? 'selected' : ''; ?>>Expired</option>
-                                        <option value="inactive" <?php echo ($member['status'] ?? '') == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
-                                    </select>
-                                </div>
-                            </div>
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="Additional notes about progress, goals, etc."><?php echo $progress['notes'] ?? ''; ?></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -277,6 +254,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                 </form>
             </div>
         </div>
+        </div>
+    </div>
     </div>
 
     <!-- Include libraries for export -->
@@ -307,9 +286,9 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
         });
 
         // Show modal if editing
-        <?php if ($member): ?>
+        <?php if ($progress): ?>
             document.addEventListener('DOMContentLoaded', function() {
-                var modal = new bootstrap.Modal(document.getElementById('memberModal'));
+                var modal = new bootstrap.Modal(document.getElementById('progressModal'));
                 modal.show();
             });
         <?php endif; ?>
@@ -318,7 +297,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
         function exportToExcel() {
             const table = document.getElementById('datatables');
             const wb = XLSX.utils.book_new();
-            
+
             // Clone table and remove Actions column
             const clonedTable = table.cloneNode(true);
             const rows = clonedTable.querySelectorAll('tr');
@@ -326,42 +305,44 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                 const lastCell = row.querySelector('th:last-child, td:last-child');
                 if (lastCell) lastCell.remove();
             });
-            
+
             const ws = XLSX.utils.table_to_sheet(clonedTable);
-            
+
             // Set column widths
             ws['!cols'] = [
                 {wch: 5},  // ID
-                {wch: 20}, // Name
-                {wch: 25}, // Email
-                {wch: 15}, // Contact
-                {wch: 15}, // Plan
-                {wch: 12}, // Expiry Date
-                {wch: 10}  // Status
+                {wch: 20}, // Member
+                {wch: 12}, // Date
+                {wch: 10}, // Weight
+                {wch: 10}, // Chest
+                {wch: 10}, // Waist
+                {wch: 10}, // Hips
+                {wch: 10}, // Biceps
+                {wch: 30}  // Notes
             ];
-            
-            XLSX.utils.book_append_sheet(wb, ws, 'Members');
-            XLSX.writeFile(wb, 'Members_' + new Date().toISOString().slice(0,10) + '.xlsx');
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Member_Progress');
+            XLSX.writeFile(wb, 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.xlsx');
         }
 
         // Export to PDF
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
-            
+
             // Add title
             doc.setFontSize(18);
-            doc.text('Member List', 14, 15);
-            
+            doc.text('Member Progress Records', 14, 15);
+
             // Add date
             doc.setFontSize(10);
             doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
-            
+
             // Get table data
             const table = document.getElementById('datatables');
             const rows = [];
             const headers = [];
-            
+
             // Get headers (exclude Actions column)
             const headerCells = table.querySelectorAll('thead th');
             headerCells.forEach((cell, index) => {
@@ -369,7 +350,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                     headers.push(cell.textContent.trim());
                 }
             });
-            
+
             // Get rows (exclude Actions column)
             const bodyRows = table.querySelectorAll('tbody tr');
             bodyRows.forEach(row => {
@@ -382,7 +363,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                 });
                 rows.push(rowData);
             });
-            
+
             // Add table
             doc.autoTable({
                 head: [headers],
@@ -402,8 +383,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                     fillColor: [245, 247, 250]
                 }
             });
-            
-            doc.save('Members_' + new Date().toISOString().slice(0,10) + '.pdf');
+
+            doc.save('Member_Progress_' + new Date().toISOString().slice(0,10) + '.pdf');
         }
     </script>
        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>

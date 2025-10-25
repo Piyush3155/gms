@@ -5,39 +5,59 @@ A comprehensive web-based Gym Management System built with PHP, MySQL, Bootstrap
 ## Features
 
 ### 🏢 Administrator Features
-- **Dashboard**: Overview of gym statistics and recent activities
-- **Member Management**: Add, edit, view, and manage member profiles
-- **Trainer Management**: Manage trainer profiles and assignments
-- **Membership Plans**: Create and manage different membership plans
-- **Attendance Tracking**: Bulk attendance marking and reporting
-- **Payment Management**: Record payments and generate invoices
-- **Expense Tracking**: Track gym expenses by category
-- **Reports & Analytics**: Comprehensive reports with charts and graphs
-- **Settings**: Configure gym information, logo, and branding (name, tagline, contact, address)
-- **Profile Management**: Update admin profile and change password
+- **Dashboard**: Overview of total members, trainers, income, and attendance summary
+- **Member Management**: Add/edit members, manage renewals, and view active/expired status
+- **Trainer Management**: Manage trainers, assign members, view profiles and workload
+- **Membership Plans**: Create and manage membership packages (duration, cost, benefits)
+- **Attendance Tracking**: Mark or bulk update attendance for members and trainers
+- **Payment Management**: Record membership payments, renewals, and print invoices
+- **Expense Tracking**: Track gym expenses by category and generate monthly summaries
+- **Equipment Management**: Track gym equipment inventory, maintenance, and availability
+- **Member Progress Tracking**: Record and visualize member measurements (weight, body fat, etc.)
+- **Group Classes**: Schedule group fitness sessions, manage bookings, and set class capacity
+- **Notification System (Email)**: Send bulk emails for membership expiry, updates, or promotions
+- **Reports & Analytics**: Generate visual and PDF-based reports using Chart.js and FPDF
+- **Settings**: Update gym name, tagline, logo, contact info, and other configurations
+- **Profile Management**: Admin can edit personal info and change password
 
 ### 👨‍🏫 Trainer Features
-- **Dashboard**: View assigned members and recent activities
-- **Member Management**: View and manage assigned members
-- **Workout Plans**: Create personalized workout plans for members
-- **Diet Plans**: Design nutrition plans with meal breakdowns
+- **Dashboard**: View assigned members, class schedules, and recent activity
+- **Member Management**: View/manage assigned members and track their attendance
+- **Workout Plans**: Create and assign workout plans (sets, reps, exercises)
+- **Diet Plans**: Create and assign meal plans with calorie/nutrition details
 - **Attendance Management**: Mark attendance for assigned members
-- **Profile Management**: Update trainer profile with photo upload
+- **Profile Management**: Update trainer's own profile and photo
 
 ### 👤 Member Features
-- **Dashboard**: Personal fitness overview and quick stats
-- **Profile Management**: Update personal information and photo
-- **Attendance View**: Check personal attendance history
-- **Workout Plans**: View assigned workout routines
-- **Diet Plans**: Access personalized nutrition plans
+- **Dashboard**: Personal stats overview (attendance, progress, plans)
+- **Profile Management**: Update member profile, photo, and contact details
+- **Attendance View**: View personal attendance history
+- **Workout Plans**: View assigned workouts and exercises
+- **Diet Plans**: View assigned diet plans and goals
+- **Class Booking**: Browse and book available group fitness classes
+
+### 🧾 System & Advanced Modules
+- **Role & Permission Management (RBAC Enhancements)**: Manage multiple roles beyond admin/trainer/member, Assign permissions for each module (view, add, edit, delete)
+- **Front Desk / Reception Module**: Quick member registration and renewals, Attendance check-in/out, Simple POS-style payment interface
+- **Inventory / Supplement Store Management**: Manage stock of gym supplements and accessories, Record sales, purchases, and supplier details
+- **HR & Payroll Management**: Track working hours, generate salaries for trainers/staff, Export salary slips to PDF
+- **Feedback & Complaint System**: Members can submit feedback or complaints, Admin can respond and rate trainers
+- **Access Control via QR / RFID**: Generate QR code or RFID tag for each member, Scan to auto-mark attendance
+- **Admin Activity Log / Audit Trail**: Track all user activities (add/edit/delete), Store who did what and when
+- **Backup & Restore Module**: Export and download database backups, Option to restore from backup files
+- **Multi-Branch / Franchise Support**: Manage multiple gym branches under one system, Branch-level admin and centralized reporting
+- **API Module (for future app integration)**: RESTful API endpoints for mobile app or third-party integration
+- **Notification Dashboard (Centralized Alerts)**: Show expiring memberships, pending payments, and equipment maintenance alerts
 
 ## Technology Stack
 
 - **Backend**: PHP 7.4+
 - **Database**: MySQL 5.7+
 - **Frontend**: Bootstrap 5, Font Awesome 6, Chart.js
+- **PDF Generation**: FPDF library for report exports
 - **Authentication**: Session-based with role-based access control
 - **File Upload**: Image upload for profiles and gym logo
+- **Email**: PHP mail() function for notifications
 
 ## Installation
 
@@ -69,9 +89,9 @@ A comprehensive web-based Gym Management System built with PHP, MySQL, Bootstrap
 4. **Access the Application**
    - Open your browser and go to: `http://localhost/gms/`
    - Default login credentials:
-     - **Admin**: username: `admin`, password: `admin123`
-     - **Trainer**: username: `trainer1`, password: `trainer123`
-     - **Member**: username: `member1`, password: `member123`
+     - **Admin**: email: `admin@gym.com`, password: `password`
+     - **Trainer**: email: `trainer1@gym.com`, password: `password`
+     - **Member**: email: `member1@gym.com`, password: `password`
 
 ## Project Structure
 
@@ -89,9 +109,14 @@ gms/
 │   ├── attendance.php # Attendance tracking
 │   ├── payments.php   # Payment management
 │   ├── expenses.php   # Expense tracking
+│   ├── equipment.php  # Equipment management
+│   ├── member_progress.php # Member progress tracking
+│   ├── group_classes.php   # Group class scheduling
+│   ├── notifications.php   # Bulk email notifications
 │   ├── reports.php    # Reports & analytics
 │   ├── settings.php   # System settings
-│   └── profile.php    # Admin profile management
+│   ├── profile.php    # Admin profile management
+│   └── renew_membership.php # Membership renewal
 ├── trainer/           # Trainer panel pages
 │   ├── index.php      # Trainer dashboard
 │   ├── plans.php      # Workout & diet plan creation
@@ -102,15 +127,19 @@ gms/
 │   ├── attendance.php # Attendance history
 │   ├── workouts.php   # View workout plans
 │   ├── diets.php      # View diet plans
+│   ├── classes.php    # Group class booking
 │   └── profile.php    # Member profile management
 ├── assets/            # Static files
 │   ├── css/
 │   │   └── style.css
 │   └── images/        # Uploaded images
+├── database/          # Database files
+│   └── schema.sql     # Database schema with sample data
+├── fpdf/              # PDF generation library
 ├── login.php          # Login page
 ├── dashboard.php      # Role-based redirect
 ├── logout.php         # Logout functionality
-├── schema.sql         # Database schema
+├── test_system.php    # System testing script
 └── README.md
 ```
 
@@ -119,7 +148,7 @@ gms/
 The system uses the following main tables:
 
 - `users` - User authentication and roles
-- `members` - Member information
+- `members` - Member information with expiry_date for renewal tracking
 - `trainers` - Trainer information
 - `plans` - Membership plans
 - `attendance` - Attendance records
@@ -127,6 +156,10 @@ The system uses the following main tables:
 - `workout_plans` - Workout plans
 - `diet_plans` - Diet plans
 - `expenses` - Gym expenses
+- `equipment` - Equipment inventory and maintenance tracking
+- `member_progress` - Member fitness progress measurements
+- `group_classes` - Group class schedules and details
+- `class_bookings` - Member class booking records
 - `settings` - System settings (gym name, tagline, contact info, logo)
 
 ## Configuration
@@ -155,30 +188,89 @@ After setting up the database, you can configure the gym information through the
 - Check attendance history
 - View assigned plans
 
-## Security Features
+## New Features Guide
 
-- Password hashing using bcrypt
-- Session-based authentication
-- Role-based access control
-- SQL injection prevention
-- XSS protection
+### 🆕 Membership Renewal System
+- **Automatic Expiry Tracking**: Members table now includes `expiry_date` field
+- **Renewal Interface**: Admin can renew memberships through the member management page
+- **Payment Recording**: Renewal payments are automatically recorded
+- **Expiry Alerts**: System tracks membership expiry dates
+
+### 🆕 Equipment Management
+- **Inventory Tracking**: Add, edit, and monitor gym equipment
+- **Maintenance Scheduling**: Track equipment maintenance and status
+- **Status Management**: Mark equipment as available, under maintenance, or out of service
+- **Location Tracking**: Organize equipment by location in the gym
+
+### 🆕 Member Progress Tracking
+- **Measurement Recording**: Track weight, body fat, measurements over time
+- **Progress History**: View historical progress data with charts
+- **Goal Setting**: Set fitness goals and track progress towards them
+- **Visual Analytics**: Progress charts and trend analysis
+
+### 🆕 Group Classes System
+- **Class Scheduling**: Create and manage group fitness classes
+- **Capacity Management**: Set class capacity and track bookings
+- **Member Booking**: Members can browse and book available classes
+- **Booking Management**: View class bookings and manage attendance
+
+### 🆕 Notification System
+- **Bulk Email Sending**: Send emails to all members or filtered groups
+- **Expiry Alerts**: Automated notifications for membership expiry
+- **Custom Messages**: Send announcements and updates to members
+- **Email Templates**: Pre-configured templates for common notifications
+
+### 🆕 Enhanced Reports
+- **Advanced Analytics**: Comprehensive reporting with Chart.js visualizations
+- **Export Capabilities**: Export reports to PDF using FPDF library
+- **Real-time Data**: Live dashboard with current gym statistics
+- **Custom Date Ranges**: Filter reports by date ranges
+
+## Testing
+
+The system includes a comprehensive testing script to verify installation and functionality:
+
+```bash
+php test_system.php
+```
+
+This script checks:
+- Database connectivity
+- Configuration loading
+- Table existence and sample data
+- File structure integrity
+- PHP syntax validation
+- Authentication functions
+- Gym settings configuration
+
+Run this script after installation to ensure everything is working correctly.
 
 ## Future Enhancements
 
-- Email/SMS notifications
-- Payment gateway integration
-- Mobile app
-- Advanced reporting with charts
-- Inventory management
-- Online booking system
+- Payment gateway integration (Stripe, PayPal)
+- Mobile app development
+- Advanced analytics with machine learning
+- Online booking system for personal training
+- Integration with fitness wearables
+- Automated social media posting
 
-## Contributing
+## Version History
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+### v2.0.0 - Enhanced Gym Management System
+- ✅ **Membership Renewal System**: Added expiry date tracking and renewal functionality
+- ✅ **Equipment Management**: Complete CRUD operations for gym equipment inventory
+- ✅ **Member Progress Tracking**: Measurement recording and progress visualization
+- ✅ **Group Classes**: Class scheduling and member booking system
+- ✅ **Notification System**: Bulk email notifications for members
+- ✅ **Enhanced Reports**: Advanced analytics with PDF export capabilities
+- ✅ **Testing Suite**: Comprehensive system testing script
+- ✅ **Database Schema Updates**: New tables and relationships for all features
+
+### v1.0.0 - Initial Release
+- Basic gym management functionality
+- Role-based access control
+- Member, trainer, and admin management
+- Attendance tracking and reporting
 
 ## License
 
