@@ -40,7 +40,7 @@ $selected_date = $_GET['date'] ?? date('Y-m-d');
 $members = $conn->query("SELECT id, name, 'member' as role FROM members UNION SELECT id, name, 'trainer' as role FROM trainers ORDER BY name");
 
 // Get attendance for selected date
-$attendance_query = $conn->prepare("SELECT a.*, u.name, u.role FROM attendance a JOIN users u ON a.user_id = u.id WHERE a.date = ? ORDER BY u.name");
+$attendance_query = $conn->prepare("SELECT a.*, u.name, a.role FROM attendance a JOIN users u ON a.user_id = u.id WHERE a.date = ? ORDER BY u.name");
 $attendance_query->bind_param("s", $selected_date);
 $attendance_query->execute();
 $attendance_records = $attendance_query->get_result();
