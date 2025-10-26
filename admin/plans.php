@@ -6,7 +6,7 @@ require_role('admin');
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = $_GET['delete'];
     $conn->query("DELETE FROM plans WHERE id = $id");
-    redirect('plans.php');
+    redirect('plans.php?msg=9');
 }
 
 // Handle add/edit
@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         if ($stmt->execute()) {
-            redirect('plans.php');
+            $msg = $plan ? '8' : '7';
+            redirect('plans.php?msg=' . $msg);
         } else {
             $errors[] = "Error saving plan.";
         }

@@ -6,7 +6,7 @@ require_role('admin');
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = $_GET['delete'];
     $conn->query("DELETE FROM trainers WHERE id = $id");
-    redirect('trainers.php');
+    redirect('trainers.php?msg=6');
 }
 
 // Handle add/edit
@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         if ($stmt->execute()) {
-            redirect('trainers.php');
+            $msg = $trainer ? '5' : '4';
+            redirect('trainers.php?msg=' . $msg);
         } else {
             $errors[] = "Error saving trainer.";
         }

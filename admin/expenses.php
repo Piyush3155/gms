@@ -13,11 +13,18 @@ if (isset($_POST['record_expense'])) {
     $stmt->bind_param("sdss", $category, $amount, $expense_date, $description);
 
     if ($stmt->execute()) {
-        $success = "Expense recorded successfully!";
+        redirect('expenses.php?msg=13');
     } else {
         $errors[] = "Failed to record expense.";
     }
     $stmt->close();
+}
+
+// Handle delete
+if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+    $id = $_GET['delete'];
+    $conn->query("DELETE FROM expenses WHERE id = $id");
+    redirect('expenses.php?msg=15');
 }
 
 // Get all expenses

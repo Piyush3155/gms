@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($stmt->execute()) {
                 log_activity('branch_added', "New branch added: $name", 'branches');
-                $message = "Branch added successfully.";
+                redirect('branches.php?msg=10');
             } else {
                 $error = "Failed to add branch.";
             }
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($stmt->execute()) {
                 log_activity('branch_updated', "Branch updated: $name", 'branches');
-                $message = "Branch updated successfully.";
+                redirect('branches.php?msg=11');
             } else {
                 $error = "Failed to update branch.";
             }
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($stmt->execute()) {
                 log_activity('branch_deleted', "Branch deleted: ID $id", 'branches');
-                $message = "Branch deleted successfully.";
+                redirect('branches.php?msg=12');
             } else {
                 $error = "Failed to delete branch.";
             }

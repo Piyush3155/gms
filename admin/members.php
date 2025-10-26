@@ -6,7 +6,7 @@ require_role('admin');
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = $_GET['delete'];
     $conn->query("DELETE FROM members WHERE id = $id");
-    redirect('members.php');
+    redirect('members.php?msg=3');
 }
 
 // Handle add/edit
@@ -50,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // New member added - generate admission receipt
                 $new_member_id = $conn->insert_id;
                 // Redirect to generate PDF receipt
-                redirect("generate_admission_receipt.php?member_id=$new_member_id");
+                redirect("generate_admission_receipt.php?member_id=$new_member_id&msg=1");
             } else {
-                redirect('members.php');
+                redirect('members.php?msg=2');
             }
         } else {
             $errors[] = "Error saving member.";

@@ -20,7 +20,7 @@ if (isset($_POST['record_payment'])) {
         if ($status == 'paid') {
             $conn->query("UPDATE members SET status='active' WHERE id=$member_id");
         }
-        $success = "Payment recorded successfully!";
+        redirect('payments.php?msg=16');
     } else {
         $errors[] = "Failed to record payment.";
     }

@@ -320,6 +320,78 @@
     </div>
 </header>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<?php
+if (isset($_GET['msg'])) {
+    $msg = $_GET['msg'];
+    $message = '';
+    $type = 'success'; // Default type
+
+    switch ($msg) {
+        // Member messages
+        case '1': $message = "Member added successfully."; $type = 'success'; break;
+        case '2': $message = "Member updated successfully."; $type = 'success'; break;
+        case '3': $message = "Member deleted successfully."; $type = 'success'; break;
+        
+        // Trainer messages
+        case '4': $message = "Trainer added successfully."; $type = 'success'; break;
+        case '5': $message = "Trainer updated successfully."; $type = 'success'; break;
+        case '6': $message = "Trainer deleted successfully."; $type = 'success'; break;
+
+        // Plan messages
+        case '7': $message = "Plan added successfully."; $type = 'success'; break;
+        case '8': $message = "Plan updated successfully."; $type = 'success'; break;
+        case '9': $message = "Plan deleted successfully."; $type = 'success'; break;
+
+        // Branch messages
+        case '10': $message = "Branch added successfully."; $type = 'success'; break;
+        case '11': $message = "Branch updated successfully."; $type = 'success'; break;
+        case '12': $message = "Branch deleted successfully."; $type = 'success'; break;
+
+        // Expense messages
+        case '13': $message = "Expense added successfully."; $type = 'success'; break;
+        case '14': $message = "Expense updated successfully."; $type = 'success'; break;
+        case '15': $message = "Expense deleted successfully."; $type = 'success'; break;
+
+        // Payment messages
+        case '16': $message = "Payment recorded successfully."; $type = 'success'; break;
+        case '17': $message = "Payment updated successfully."; $type = 'success'; break;
+        case '18': $message = "Payment deleted successfully."; $type = 'success'; break;
+
+        // General error
+        case 'error': $message = "An error occurred."; $type = 'error'; break;
+        
+        default: $message = "Unknown operation."; $type = 'info'; break;
+    }
+
+    echo "<script type='text/javascript'>
+        document.addEventListener('DOMContentLoaded', function() {
+            toastr.options = {
+                'closeButton': true,
+                'debug': false,
+                'newestOnTop': false,
+                'progressBar': true,
+                'positionClass': 'toast-top-right',
+                'preventDuplicates': false,
+                'onclick': null,
+                'showDuration': '300',
+                'hideDuration': '1000',
+                'timeOut': '5000',
+                'extendedTimeOut': '1000',
+                'showEasing': 'swing',
+                'hideEasing': 'linear',
+                'showMethod': 'fadeIn',
+                'hideMethod': 'fadeOut'
+            };
+            toastr['{$type}']('{$message}');
+        });
+    </script>";
+}
+?>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo SITE_URL; ?>assets/js/sidebar.js"></script>
 <script>
