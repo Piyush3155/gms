@@ -79,6 +79,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/custom.css" rel="stylesheet">
     <!-- DataTables CSS -->
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
@@ -90,23 +91,25 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Member Management</h2>
-            <div>
-                <button class="btn btn-success me-2" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-2"></i>Export to Excel
-                </button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF()">
-                    <i class="fas fa-file-pdf me-2"></i>Export to PDF
-                </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#memberModal">
-                    <i class="fas fa-plus me-2"></i>Add New Member
-                </button>
-            </div>
-        </div>
+        <div class="page-header">
+    <h1 class="page-title">Member Management</h1>
+    <div class="page-options">
+        <button class="btn btn-outline-secondary" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-1"></i>Export to Excel
+        </button>
+        <button class="btn btn-outline-secondary" onclick="exportToPDF()">
+            <i class="fas fa-file-pdf me-1"></i>Export to PDF
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#memberModal">
+            <i class="fas fa-plus me-1"></i>Add New Member
+        </button>
+    </div>
+</div>
 
+        <div class="card-modern">
+    <div class="card-body">
         <div class="table-responsive">
-            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <table id="datatables" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -128,12 +131,12 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                             <td><?php echo $row['contact']; ?></td>
                             <td><?php echo $row['plan_name']; ?></td>
                             <td><?php echo $row['expiry_date'] ? date('M d, Y', strtotime($row['expiry_date'])) : 'N/A'; ?></td>
-                            <td><span class="badge bg-<?php echo $row['status'] == 'active' ? 'success' : 'secondary'; ?>"><?php echo ucfirst($row['status']); ?></span></td>
-                            <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="renew_membership.php?member_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-success" title="Renew Membership"><i class="bi bi-arrow-clockwise"></i></a>
-                                <a href="generate_admission_receipt.php?member_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-info" title="Receipt" target="_blank"><i class="bi bi-receipt"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                            <td><span class="badge-status badge-<?php echo $row['status'] == 'active' ? 'active' : 'inactive'; ?>"><?php echo ucfirst($row['status']); ?></span></td>
+                            <td class="text-center">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="renew_membership.php?member_id=<?php echo $row['id']; ?>" class="btn btn-icon btn-success" title="Renew Membership"><i class="bi bi-arrow-clockwise"></i></a>
+                                <a href="generate_admission_receipt.php?member_id=<?php echo $row['id']; ?>" class="btn btn-icon btn-info" title="Receipt" target="_blank"><i class="bi bi-receipt"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -156,34 +159,37 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
 
     <!-- Member Modal -->
     <div class="modal fade" id="memberModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-modern">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><?php echo $member ? 'Edit' : 'Add'; ?> Member</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST" class="form-modern">
                     <div class="modal-body">
                         <?php if (!empty($errors)): ?>
-                            <div class="alert alert-danger">
-                                <ul class="mb-0">
-                                    <?php foreach ($errors as $error): ?>
-                                        <li><?php echo $error; ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
+                            <div class="alert alert-danger alert-modern">
+                                <div>
+                                    <h5 class="alert-heading">Error!</h5>
+                                    <ul class="mb-0">
+                                        <?php foreach ($errors as $error): ?>
+                                            <li><?php echo $error; ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
                             </div>
                         <?php endif; ?>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Name *</label>
+                                    <label class="form-label"><i class="fas fa-user"></i>Name *</label>
                                     <input type="text" class="form-control" name="name" value="<?php echo $member['name'] ?? ''; ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Email *</label>
+                                    <label class="form-label"><i class="fas fa-envelope"></i>Email *</label>
                                     <input type="email" class="form-control" name="email" value="<?php echo $member['email'] ?? ''; ?>" required>
                                 </div>
                             </div>
@@ -192,8 +198,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Gender</label>
-                                    <select class="form-control" name="gender">
+                                    <label class="form-label"><i class="fas fa-venus-mars"></i>Gender</label>
+                                    <select class="form-select" name="gender">
                                         <option value="">Select Gender</option>
                                         <option value="male" <?php echo ($member['gender'] ?? '') == 'male' ? 'selected' : ''; ?>>Male</option>
                                         <option value="female" <?php echo ($member['gender'] ?? '') == 'female' ? 'selected' : ''; ?>>Female</option>
@@ -203,7 +209,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Date of Birth</label>
+                                    <label class="form-label"><i class="fas fa-calendar-alt"></i>Date of Birth</label>
                                     <input type="date" class="form-control" name="dob" value="<?php echo $member['dob'] ?? ''; ?>">
                                 </div>
                             </div>
@@ -212,34 +218,34 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Contact</label>
+                                    <label class="form-label"><i class="fas fa-phone"></i>Contact</label>
                                     <input type="text" class="form-control" name="contact" value="<?php echo $member['contact'] ?? ''; ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Join Date</label>
+                                    <label class="form-label"><i class="fas fa-calendar-plus"></i>Join Date</label>
                                     <input type="date" class="form-control" name="join_date" value="<?php echo $member['join_date'] ?? date('Y-m-d'); ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Expiry Date</label>
+                                    <label class="form-label"><i class="fas fa-calendar-times"></i>Expiry Date</label>
                                     <input type="date" class="form-control" name="expiry_date" value="<?php echo $member['expiry_date'] ?? ''; ?>">
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Address</label>
+                            <label class="form-label"><i class="fas fa-map-marker-alt"></i>Address</label>
                             <textarea class="form-control" name="address" rows="3"><?php echo $member['address'] ?? ''; ?></textarea>
                         </div>
 
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Plan</label>
-                                    <select class="form-control" name="plan_id">
+                                    <label class="form-label"><i class="fas fa-id-card"></i>Plan</label>
+                                    <select class="form-select" name="plan_id">
                                         <option value="">Select Plan</option>
                                         <?php while ($plan = $plans->fetch_assoc()): ?>
                                             <option value="<?php echo $plan['id']; ?>" <?php echo ($member['plan_id'] ?? '') == $plan['id'] ? 'selected' : ''; ?>><?php echo $plan['name']; ?></option>
@@ -249,8 +255,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Trainer</label>
-                                    <select class="form-control" name="trainer_id">
+                                    <label class="form-label"><i class="fas fa-user-tie"></i>Trainer</label>
+                                    <select class="form-select" name="trainer_id">
                                         <option value="">Select Trainer</option>
                                         <?php while ($trainer = $trainers->fetch_assoc()): ?>
                                             <option value="<?php echo $trainer['id']; ?>" <?php echo ($member['trainer_id'] ?? '') == $trainer['id'] ? 'selected' : ''; ?>><?php echo $trainer['name']; ?></option>
@@ -260,8 +266,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Status</label>
-                                    <select class="form-control" name="status">
+                                    <label class="form-label"><i class="fas fa-toggle-on"></i>Status</label>
+                                    <select class="form-select" name="status">
                                         <option value="active" <?php echo ($member['status'] ?? 'active') == 'active' ? 'selected' : ''; ?>>Active</option>
                                         <option value="expired" <?php echo ($member['status'] ?? '') == 'expired' ? 'selected' : ''; ?>>Expired</option>
                                         <option value="inactive" <?php echo ($member['status'] ?? '') == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
@@ -272,7 +278,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-modern">Save Member</button>
                     </div>
                 </form>
             </div>

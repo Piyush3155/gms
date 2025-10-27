@@ -1,4 +1,4 @@
-<body class="">
+<body class="sidebar-open">
 <div class="modern-sidebar" id="sidebar">
     <div class="sidebar-brand">
         <div class="brand-logo">
@@ -225,18 +225,16 @@
             <button class="sidebar-toggle-btn" id="sidebarToggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="header-search d-none d-md-block ms-4">
-                <div class="search-wrapper">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="search-input" placeholder="Search members, plans...">
-                </div>
+            <div class="header-search-container">
+                <input type="text" id="headerSearch" class="form-control" placeholder="Search for members, plans, etc.">
+                <div id="searchResults" class="search-results-dropdown"></div>
             </div>
         </div>
 
         <div class="header-right">
             <div class="header-actions">
                 <div class="header-action-item notification-item">
-                    <button class="action-btn" onclick="window.location.href='<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/index.php'">
+                    <button class="action-btn" onclick="window.location.href='<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/notifications.php'">
                         <i class="fas fa-bell"></i>
                         <?php
                         // Quick notification count for header
@@ -394,6 +392,7 @@ if (isset($_GET['msg'])) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo SITE_URL; ?>assets/js/sidebar.js"></script>
+<script id="main-script" src="<?php echo SITE_URL; ?>assets/js/main.js" data-site-url="<?php echo SITE_URL; ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Activate current page link in sidebar

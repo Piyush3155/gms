@@ -61,3 +61,79 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     applySidebarState();
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('headerSearch');
+    const searchResults = document.getElementById('searchResults');
+    const siteUrl = '<?php echo SITE_URL; ?>'; // Make sure this is defined in a global scope or passed correctly
+
+    if (searchInput && searchResults) {
+        searchInput.addEventListener('input', function () {
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            fetch(`${siteUrl}api/search.php?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    let resultsHtml = '';
+                    const hasResults = data.members.length > 0 || data.plans.length > 0 || data.trainers.length > 0;
+
+                    if (hasResults) {
+                        if (data.members.length > 0) {
+                            resultsHtml += '<div class="search-result-category">Members</div>';
+                            data.members.forEach(item => {
+                                resultsHtml += `
+                                    <a href="${item.url}" class="search-result-item">
+                                        <div class="result-title">${item.name}</div>
+                                        <div class="result-meta">${item.email}</div>
+                                    </a>
+                                `;
+                            });
+                        }
+                        if (data.plans.length > 0) {
+                            resultsHtml += '<div class="search-result-category">Plans</div>';
+                            data.plans.forEach(item => {
+                                resultsHtml += `
+                                    <a href="${item.url}" class="search-result-item">
+                                        <div class="result-title">${item.name}</div>
+                                        <div class="result-meta">Duration: ${item.duration} days | Price: ${item.price}</div>
+                                    </a>
+                                `;
+                            });
+                        }
+                        if (data.trainers.length > 0) {
+                            resultsHtml += '<div class="search-result-category">Trainers</div>';
+                            data.trainers.forEach(item => {
+                                resultsHtml += `
+                                    <a href="${item.url}" class="search-result-item">
+                                        <div class="result-title">${item.name}</div>
+                                        <div class="result-meta">${item.specialization}</div>
+                                    </a>
+                                `;
+                            });
+                        }
+                    } else {
+                        resultsHtml = '<div class="no-results">No results found</div>';
+                    }
+
+                    searchResults.innerHTML = resultsHtml;
+                    searchResults.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                    searchResults.style.display = 'none';
+                });
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+});
