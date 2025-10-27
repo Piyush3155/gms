@@ -65,6 +65,7 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/custom.css" rel="stylesheet">
     <!-- DataTables CSS -->
        
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -77,23 +78,25 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Trainer Management</h2>
-            <div>
-                <button class="btn btn-success me-2" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-2"></i>Export to Excel
-                </button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF()">
-                    <i class="fas fa-file-pdf me-2"></i>Export to PDF
-                </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trainerModal">
-                    <i class="fas fa-plus me-2"></i>Add New Trainer
-                </button>
-            </div>
-        </div>
+        <div class="page-header">
+    <h1 class="page-title">Trainer Management</h1>
+    <div class="page-options">
+        <button class="btn btn-outline-secondary" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-1"></i>Export to Excel
+        </button>
+        <button class="btn btn-outline-secondary" onclick="exportToPDF()">
+            <i class="fas fa-file-pdf me-1"></i>Export to PDF
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trainerModal">
+            <i class="fas fa-plus me-1"></i>Add New Trainer
+        </button>
+    </div>
+</div>
 
+        <div class="card-modern">
+    <div class="card-body">
         <div class="table-responsive">
-            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <table id="datatables" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -118,13 +121,9 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                             <td><?php echo $row['experience']; ?></td>
                             <td>$<?php echo number_format($row['salary'], 2); ?></td>
                             <td><?php echo $row['member_count']; ?></td>
-                            <td class="d-flex gap-2">
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-xs btn-warning">
-                                    <i class="bi bi-pencil-square"></i> 
-                                </a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Are you sure?')">
-                                    <i class="bi bi-trash"></i> 
-                                </a>
+                            <td class="text-center">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -148,34 +147,37 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
 
     <!-- Trainer Modal -->
     <div class="modal fade" id="trainerModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-modern">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><?php echo $trainer ? 'Edit' : 'Add'; ?> Trainer</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST" class="form-modern">
                     <div class="modal-body">
                         <?php if (!empty($errors)): ?>
-                            <div class="alert alert-danger">
-                                <ul class="mb-0">
-                                    <?php foreach ($errors as $error): ?>
-                                        <li><?php echo $error; ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
+                            <div class="alert alert-danger alert-modern">
+                                <div>
+                                    <h5 class="alert-heading">Error!</h5>
+                                    <ul class="mb-0">
+                                        <?php foreach ($errors as $error): ?>
+                                            <li><?php echo $error; ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
                             </div>
                         <?php endif; ?>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Name *</label>
+                                    <label class="form-label"><i class="fas fa-user"></i>Name *</label>
                                     <input type="text" class="form-control" name="name" value="<?php echo $trainer['name'] ?? ''; ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Email *</label>
+                                    <label class="form-label"><i class="fas fa-envelope"></i>Email *</label>
                                     <input type="email" class="form-control" name="email" value="<?php echo $trainer['email'] ?? ''; ?>" required>
                                 </div>
                             </div>
@@ -184,13 +186,13 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Specialization</label>
+                                    <label class="form-label"><i class="fas fa-star"></i>Specialization</label>
                                     <input type="text" class="form-control" name="specialization" value="<?php echo $trainer['specialization'] ?? ''; ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Contact</label>
+                                    <label class="form-label"><i class="fas fa-phone"></i>Contact</label>
                                     <input type="text" class="form-control" name="contact" value="<?php echo $trainer['contact'] ?? ''; ?>">
                                 </div>
                             </div>
@@ -199,19 +201,19 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Experience (years)</label>
+                                    <label class="form-label"><i class="fas fa-briefcase"></i>Experience (years)</label>
                                     <input type="number" class="form-control" name="experience" value="<?php echo $trainer['experience'] ?? ''; ?>">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Salary</label>
+                                    <label class="form-label"><i class="fas fa-dollar-sign"></i>Salary</label>
                                     <input type="number" step="0.01" class="form-control" name="salary" value="<?php echo $trainer['salary'] ?? ''; ?>">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Join Date</label>
+                                    <label class="form-label"><i class="fas fa-calendar-plus"></i>Join Date</label>
                                     <input type="date" class="form-control" name="join_date" value="<?php echo $trainer['join_date'] ?? date('Y-m-d'); ?>" required>
                                 </div>
                             </div>
@@ -219,7 +221,7 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-modern">Save Trainer</button>
                     </div>
                 </form>
             </div>

@@ -170,7 +170,9 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
     <title>Gym Settings - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/custom.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-wrapper">
@@ -180,27 +182,32 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
         <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <div class="card">
+                <div class="card card-modern fade-in">
                     <div class="card-header">
-                        <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Settings</h4>
+                        <h4 class="mb-0"><i class="fas fa-cog me-2"></i>System Settings</h4>
                     </div>
                     <div class="card-body">
                         <!-- Nav tabs -->
-                        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                        <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="gym-tab" data-bs-toggle="tab" data-bs-target="#gym" type="button" role="tab">Gym Settings</button>
+                                <button class="nav-link active" id="gym-tab" data-bs-toggle="tab" data-bs-target="#gym" type="button" role="tab">
+                                    <i class="fas fa-building me-2"></i>Gym Settings
+                                </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">User Management</button>
+                                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                                    <i class="fas fa-users me-2"></i>User Management
+                                </button>
                             </li>
                         </ul>
 
                         <!-- Tab content -->
-                        <div class="tab-content mt-4" id="settingsTabsContent">
+                        <div class="tab-content" id="settingsTabsContent">
                             <!-- Gym Settings Tab -->
                             <div class="tab-pane fade show active" id="gym" role="tabpanel">
                                 <?php if (!empty($errors)): ?>
-                                    <div class="alert alert-danger">
+                                    <div class="alert alert-danger alert-modern">
+                                        <i class="fas fa-exclamation-triangle"></i>
                                         <ul class="mb-0">
                                             <?php foreach ($errors as $error): ?>
                                                 <li><?php echo $error; ?></li>
@@ -210,12 +217,13 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
                                 <?php endif; ?>
 
                                 <?php if ($success): ?>
-                                    <div class="alert alert-success">
-                                        <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
+                                    <div class="alert alert-success alert-modern">
+                                        <i class="fas fa-check-circle"></i>
+                                        <div><?php echo $success; ?></div>
                                     </div>
                                 <?php endif; ?>
 
-                                <form method="POST" enctype="multipart/form-data">
+                                <form method="POST" enctype="multipart/form-data" class="form-modern">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
@@ -260,7 +268,7 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
 
                                     <div class="d-grid">
                                         <button type="submit" name="save_settings" class="btn btn-modern">
-                                            <i class="fas fa-save me-2"></i>Save Settings
+                                            <i class="fas fa-save"></i>Save Settings
                                         </button>
                                     </div>
                                 </form>
@@ -269,7 +277,8 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
                             <!-- User Management Tab -->
                             <div class="tab-pane fade" id="users" role="tabpanel">
                                 <?php if (!empty($user_errors)): ?>
-                                    <div class="alert alert-danger">
+                                    <div class="alert alert-danger alert-modern">
+                                        <i class="fas fa-exclamation-triangle"></i>
                                         <ul class="mb-0">
                                             <?php foreach ($user_errors as $error): ?>
                                                 <li><?php echo $error; ?></li>
@@ -279,20 +288,21 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
                                 <?php endif; ?>
 
                                 <?php if ($user_success): ?>
-                                    <div class="alert alert-success">
-                                        <i class="fas fa-check-circle me-2"></i><?php echo $user_success; ?>
+                                    <div class="alert alert-success alert-modern">
+                                        <i class="fas fa-check-circle"></i>
+                                        <div><?php echo $user_success; ?></div>
                                     </div>
                                 <?php endif; ?>
 
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5>User Management</h5>
-                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#userModal">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>System Users</h5>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
                                         <i class="fas fa-plus me-2"></i>Add New User
                                     </button>
                                 </div>
 
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover">
+                                    <table class="table table-modern table-hover">
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
@@ -310,7 +320,7 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
                                                     <td><?php echo htmlspecialchars($row['name']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                                                     <td>
-                                                        <span class="badge bg-<?php echo $row['role_id'] == 1 ? 'danger' : ($row['role_id'] == 2 ? 'warning' : 'info'); ?>">
+                                                        <span class="badge badge-status badge-<?php echo $row['role_id'] == 1 ? 'active' : ($row['role_id'] == 2 ? 'pending' : 'inactive'); ?>">
                                                             <?php echo htmlspecialchars($row['role_name'] ?? 'No Role'); ?>
                                                         </span>
                                                     </td>
@@ -340,14 +350,14 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
         </div>
     </div>
     <!-- User Modal -->
-    <div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal fade modal-modern" id="userModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $user ? 'Edit' : 'Add'; ?> User</h5>
+                    <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i><?php echo $user ? 'Edit' : 'Add'; ?> User</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST" class="form-modern">
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-6">

@@ -55,6 +55,7 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/custom.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-wrapper">
@@ -62,43 +63,55 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-credit-card me-2"></i>Payment & Billing</h2>
-            <button class="btn btn-modern" data-bs-toggle="modal" data-bs-target="#paymentModal">
-                <i class="fas fa-plus me-2"></i>Record Payment
-            </button>
+        <div class="page-header">
+            <h1 class="page-title"><i class="fas fa-credit-card me-2"></i>Payment & Billing</h1>
+            <div class="page-options">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                    <i class="fas fa-plus me-1"></i>Record Payment
+                </button>
+            </div>
         </div>
 
         <!-- Revenue Summary -->
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-dollar-sign me-2"></i>Total Revenue</h5>
-                        <h2>₹<?php echo number_format($total_revenue, 2); ?></h2>
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <p class="info-card-title">Total Revenue</p>
+                        <h2 class="info-card-value">₹<?php echo number_format($total_revenue, 2); ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i>This Month</h5>
-                        <h2>₹<?php echo number_format($this_month_revenue, 2); ?></h2>
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <p class="info-card-title">This Month</p>
+                        <h2 class="info-card-value">₹<?php echo number_format($this_month_revenue, 2); ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-clock me-2"></i>Pending Payments</h5>
-                        <h2><?php echo $pending_payments; ?></h2>
+                <div class="info-card">
+                    <div class="info-card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <p class="info-card-title">Pending Payments</p>
+                        <h2 class="info-card-value"><?php echo $pending_payments; ?></h2>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Payments Table -->
-        <div class="card">
+        <div class="card-modern">
+            <div class="card-body">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-list me-2"></i>Payment History</h5>
                 <div>

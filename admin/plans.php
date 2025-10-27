@@ -62,6 +62,7 @@ $plans = $conn->query("SELECT * FROM plans");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/custom.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     
@@ -73,23 +74,25 @@ $plans = $conn->query("SELECT * FROM plans");
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Membership Plans</h2>
-            <div>
-                <button class="btn btn-success me-2" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-2"></i>Export to Excel
-                </button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF()">
-                    <i class="fas fa-file-pdf me-2"></i>Export to PDF
-                </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#planModal">
-                    <i class="fas fa-plus me-2"></i>Add New Plan
-                </button>
-            </div>
-        </div>
+        <div class="page-header">
+    <h1 class="page-title">Membership Plans</h1>
+    <div class="page-options">
+        <button class="btn btn-outline-secondary" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-1"></i>Export to Excel
+        </button>
+        <button class="btn btn-outline-secondary" onclick="exportToPDF()">
+            <i class="fas fa-file-pdf me-1"></i>Export to PDF
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#planModal">
+            <i class="fas fa-plus me-1"></i>Add New Plan
+        </button>
+    </div>
+</div>
 
+        <div class="card-modern">
+    <div class="card-body">
         <div class="table-responsive">
-            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <table id="datatables" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -108,9 +111,9 @@ $plans = $conn->query("SELECT * FROM plans");
                             <td><?php echo $row['duration_months']; ?></td>
                             <td>₹<?php echo number_format($row['amount'], 2); ?></td>
                             <td><?php echo substr($row['description'], 0, 50) . (strlen($row['description']) > 50 ? '...' : ''); ?></td>
-                            <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')"> <i class="bi bi-trash"></i></a>
+                            <td class="text-center">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -131,52 +134,55 @@ $plans = $conn->query("SELECT * FROM plans");
 
     <!-- Plan Modal -->
     <div class="modal fade" id="planModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-modern">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><?php echo $plan ? 'Edit' : 'Add'; ?> Plan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST" class="form-modern">
                     <div class="modal-body">
                         <?php if (!empty($errors)): ?>
-                            <div class="alert alert-danger">
-                                <ul class="mb-0">
-                                    <?php foreach ($errors as $error): ?>
-                                        <li><?php echo $error; ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
+                            <div class="alert alert-danger alert-modern">
+                                <div>
+                                    <h5 class="alert-heading">Error!</h5>
+                                    <ul class="mb-0">
+                                        <?php foreach ($errors as $error): ?>
+                                            <li><?php echo $error; ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
                             </div>
                         <?php endif; ?>
 
                         <div class="mb-3">
-                            <label class="form-label">Name *</label>
+                            <label class="form-label"><i class="fas fa-id-card"></i>Name *</label>
                             <input type="text" class="form-control" name="name" value="<?php echo $plan['name'] ?? ''; ?>" required>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Duration (Months)</label>
+                                    <label class="form-label"><i class="fas fa-calendar-alt"></i>Duration (Months)</label>
                                     <input type="number" class="form-control" name="duration_months" value="<?php echo $plan['duration_months'] ?? ''; ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Amount *</label>
+                                    <label class="form-label"><i class="fas fa-dollar-sign"></i>Amount *</label>
                                     <input type="number" step="0.01" class="form-control" name="amount" value="<?php echo $plan['amount'] ?? ''; ?>" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
+                            <label class="form-label"><i class="fas fa-align-left"></i>Description</label>
                             <textarea class="form-control" name="description" rows="3"><?php echo $plan['description'] ?? ''; ?></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-modern">Save Plan</button>
                     </div>
                 </form>
             </div>

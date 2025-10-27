@@ -90,8 +90,9 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
     <title>Admin Dashboard - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/custom.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
@@ -101,48 +102,59 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Admin Dashboard</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
             <div>
-                <span class="text-muted">Welcome back, <?php echo $_SESSION['user_name']; ?>!</span>
+                <h2 class="mb-1">Admin Dashboard</h2>
+                <p class="text-muted mb-0">Welcome back, <strong><?php echo $_SESSION['user_name']; ?></strong>! Here's what's happening today.</p>
+            </div>
+            <div class="text-muted">
+                <i class="fas fa-calendar-alt me-2"></i><?php echo date('F d, Y'); ?>
             </div>
         </div>
 
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                        <h4><?php echo $stats['members']; ?></h4>
-                        <p class="text-muted mb-0">Total Members</p>
+                <div class="info-card fade-in" style="animation-delay: 0.1s;">
+                    <div class="info-card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Total Members</div>
+                        <h2 class="info-card-value"><?php echo $stats['members']; ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-user-check fa-2x text-success mb-2"></i>
-                        <h4><?php echo $stats['active_members']; ?></h4>
-                        <p class="text-muted mb-0">Active Members</p>
+                <div class="info-card fade-in" style="animation-delay: 0.2s;">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Active Members</div>
+                        <h2 class="info-card-value"><?php echo $stats['active_members']; ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-user-tie fa-2x text-info mb-2"></i>
-                        <h4><?php echo $stats['trainers']; ?></h4>
-                        <p class="text-muted mb-0">Trainers</p>
+                <div class="info-card fade-in" style="animation-delay: 0.3s;">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Trainers</div>
+                        <h2 class="info-card-value"><?php echo $stats['trainers']; ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-calendar-check fa-2x text-warning mb-2"></i>
-                        <h4><?php echo $stats['today_attendance']; ?></h4>
-                        <p class="text-muted mb-0">Today's Attendance</p>
+                <div class="info-card fade-in" style="animation-delay: 0.4s;">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Today's Attendance</div>
+                        <h2 class="info-card-value"><?php echo $stats['today_attendance']; ?></h2>
                     </div>
                 </div>
             </div>
@@ -150,29 +162,35 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
 
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-rupee-sign fa-2x text-success mb-2"></i>
-                        <h4>₹<?php echo number_format($stats['monthly_revenue'], 2); ?></h4>
-                        <p class="text-muted mb-0">Monthly Revenue</p>
+                <div class="info-card fade-in" style="animation-delay: 0.5s;">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Monthly Revenue</div>
+                        <h2 class="info-card-value">₹<?php echo number_format($stats['monthly_revenue'], 0); ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-credit-card fa-2x text-warning mb-2"></i>
-                        <h4><?php echo $stats['pending_payments']; ?></h4>
-                        <p class="text-muted mb-0">Pending Payments</p>
+                <div class="info-card fade-in" style="animation-delay: 0.6s;">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Pending Payments</div>
+                        <h2 class="info-card-value"><?php echo $stats['pending_payments']; ?></h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-boxes fa-2x text-danger mb-2"></i>
-                        <h4><?php echo $stats['low_stock']; ?></h4>
-                        <p class="text-muted mb-0">Low Stock Items</p>
+                <div class="info-card fade-in" style="animation-delay: 0.7s;">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="info-card-content">
+                        <div class="info-card-title">Low Stock Items</div>
+                        <h2 class="info-card-value"><?php echo $stats['low_stock']; ?></h2>
                     </div>
                 </div>
             </div>
@@ -182,21 +200,23 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
         <?php if (!empty($alerts)): ?>
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card">
+                <div class="card card-modern fade-in">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5><i class="fas fa-bell me-2"></i>Notifications</h5>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="dismissAllNotifications()">
+                        <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Important Notifications</h5>
+                        <button class="btn btn-sm btn-outline-light" onclick="dismissAllNotifications()">
                             <i class="fas fa-times me-1"></i>Dismiss All
                         </button>
                     </div>
                     <div class="card-body">
                         <?php foreach ($alerts as $index => $alert): ?>
-                            <div class="alert alert-<?php echo $alert['type']; ?> d-flex align-items-center alert-dismissible fade show" id="alert-<?php echo $index; ?>">
-                                <i class="<?php echo $alert['icon']; ?> me-2"></i>
+                            <div class="alert alert-<?php echo $alert['type']; ?> alert-modern d-flex align-items-center alert-dismissible fade show" id="alert-<?php echo $index; ?>">
+                                <i class="<?php echo $alert['icon']; ?>"></i>
                                 <div class="flex-grow-1">
                                     <strong><?php echo $alert['title']; ?>:</strong> <?php echo $alert['message']; ?>
                                 </div>
-                                <a href="<?php echo $alert['link']; ?>" class="btn btn-sm btn-outline-primary me-2">View</a>
+                                <a href="<?php echo $alert['link']; ?>" class="btn btn-sm btn-primary me-2">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
                                 <button type="button" class="btn-close" onclick="dismissNotification(<?php echo $index; ?>)"></button>
                             </div>
                         <?php endforeach; ?>
@@ -209,21 +229,21 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
         <!-- Recent Activities -->
         <div class="row">
             <div class="col-md-6">
-                <div class="card">
+                <div class="card card-modern fade-in">
                     <div class="card-header">
-                        <h5>Recent Activities</h5>
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activities</h5>
                     </div>
                     <div class="card-body">
                         <div class="list-group list-group-flush">
                             <?php while ($activity = $recent_activities->fetch_assoc()): ?>
-                                <div class="list-group-item px-0">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <small class="text-muted"><?php echo $activity['user_name'] ?? 'System'; ?></small>
+                                <div class="list-group-item px-0 border-0">
+                                    <div class="d-flex w-100 justify-content-between mb-1">
+                                        <small class="text-muted fw-semibold"><?php echo $activity['user_name'] ?? 'System'; ?></small>
                                         <small class="text-muted"><?php echo date('M d, H:i', strtotime($activity['created_at'])); ?></small>
                                     </div>
                                     <p class="mb-1"><?php echo $activity['action']; ?></p>
                                     <?php if ($activity['module']): ?>
-                                        <small class="text-muted"><?php echo ucfirst($activity['module']); ?> module</small>
+                                        <small class="badge badge-status badge-inactive"><?php echo ucfirst($activity['module']); ?></small>
                                     <?php endif; ?>
                                 </div>
                             <?php endwhile; ?>
@@ -233,32 +253,36 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
             </div>
 
             <div class="col-md-6">
-                <div class="card">
+                <div class="card card-modern fade-in">
                     <div class="card-header">
-                        <h5>Quick Actions</h5>
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <a href="members.php" class="btn btn-outline-primary w-100">
-                                    <i class="fas fa-users me-2"></i>Add Member
-                                </a>
-                            </div>
-                            <div class="col-6">
-                                <a href="attendance.php" class="btn btn-outline-success w-100">
-                                    <i class="fas fa-calendar-check me-2"></i>Mark Attendance
-                                </a>
-                            </div>
-                            <div class="col-6">
-                                <a href="payments.php" class="btn btn-outline-info w-100">
-                                    <i class="fas fa-credit-card me-2"></i>Record Payment
-                                </a>
-                            </div>
-                            <div class="col-6">
-                                <a href="reports.php" class="btn btn-outline-warning w-100">
-                                    <i class="fas fa-chart-bar me-2"></i>View Reports
-                                </a>
-                            </div>
+                        <div class="quick-actions-grid">
+                            <a href="members.php" class="quick-action-btn">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Add Member</span>
+                            </a>
+                            <a href="attendance.php" class="quick-action-btn">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>Mark Attendance</span>
+                            </a>
+                            <a href="payments.php" class="quick-action-btn">
+                                <i class="fas fa-dollar-sign"></i>
+                                <span>Record Payment</span>
+                            </a>
+                            <a href="reports.php" class="quick-action-btn">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>View Reports</span>
+                            </a>
+                            <a href="equipment.php" class="quick-action-btn">
+                                <i class="fas fa-dumbbell"></i>
+                                <span>Equipment</span>
+                            </a>
+                            <a href="settings.php" class="quick-action-btn">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
                         </div>
                     </div>
                 </div>

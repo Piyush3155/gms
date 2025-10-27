@@ -58,9 +58,10 @@ if ($user_role == 'admin') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?php echo SITE_URL; ?>assets/css/style.css" rel="stylesheet">
+    <link href="<?php echo SITE_URL; ?>assets/css/custom.css" rel="stylesheet">
 </head>
 <body class="sidebar-open">
     <div class="main-wrapper">
@@ -69,88 +70,258 @@ if ($user_role == 'admin') {
     <div class="page-content">
         <div class="container-fluid">
             <div class="fade-in">
-                <h1 class="display-6">Welcome back, <?php echo $user_name; ?>!</h1>
-                <p class="text-muted">Here's a snapshot of your gym's activity today.</p>
+                <!-- Modern Page Header -->
+                <div class="page-title-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1><i class="fas fa-chart-line me-3"></i>Welcome back, <?php echo $user_name; ?>!</h1>
+                            <p class="lead mb-0">Here's a snapshot of your gym's activity today - <?php echo date('l, F j, Y'); ?></p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <div class="d-flex justify-content-md-end gap-2">
+                                <a href="<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/profile.php" class="btn btn-light">
+                                    <i class="fas fa-user me-2"></i>My Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="row mt-4">
+                <!-- Stats Cards Grid -->
+                <div class="row">
                     <?php if ($user_role == 'admin'): ?>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-primary">
+                            <div class="stats-card bg-primary slide-up" style="animation-delay: 0.1s;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Total Members</h5>
-                                    <h2><?php echo $stats['members']; ?></h2>
-                                    <div class="icon"><i class="fas fa-users"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Total Members</h5>
+                                            <h2><?php echo $stats['members']; ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-arrow-up me-1"></i> Active members
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-users"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-danger">
+                            <div class="stats-card bg-danger slide-up" style="animation-delay: 0.2s;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Total Trainers</h5>
-                                    <h2><?php echo $stats['trainers']; ?></h2>
-                                    <div class="icon"><i class="fas fa-user-tie"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Total Trainers</h5>
+                                            <h2><?php echo $stats['trainers']; ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-certificate me-1"></i> Expert trainers
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-user-tie"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-info">
+                            <div class="stats-card bg-info slide-up" style="animation-delay: 0.3s;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Today's Attendance</h5>
-                                    <h2><?php echo $stats['attendance']; ?></h2>
-                                    <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Today's Attendance</h5>
+                                            <h2><?php echo $stats['attendance']; ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-clock me-1"></i> Check-ins today
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-success">
+                            <div class="stats-card bg-success slide-up" style="animation-delay: 0.4s;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Monthly Revenue</h5>
-                                    <h2>₹<?php echo number_format($stats['revenue'], 2); ?></h2>
-                                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Monthly Revenue</h5>
+                                            <h2>₹<?php echo number_format($stats['revenue'], 0); ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-trending-up me-1"></i> This month
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Quick Actions for Admin -->
+                        <div class="col-12 mb-4">
+                            <div class="card-modern slide-up" style="animation-delay: 0.5s;">
+                                <div class="card-header">
+                                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                                </div>
+                                <div class="card-body">
+                                    <div class="quick-actions-grid">
+                                        <a href="<?php echo SITE_URL; ?>admin/members.php" class="quick-action-btn">
+                                            <i class="fas fa-user-plus"></i>
+                                            <span>Add Member</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>admin/trainers.php" class="quick-action-btn">
+                                            <i class="fas fa-chalkboard-teacher"></i>
+                                            <span>Manage Trainers</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>admin/attendance.php" class="quick-action-btn">
+                                            <i class="fas fa-clipboard-check"></i>
+                                            <span>Mark Attendance</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>admin/payments.php" class="quick-action-btn">
+                                            <i class="fas fa-credit-card"></i>
+                                            <span>Add Payment</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>admin/reports.php" class="quick-action-btn">
+                                            <i class="fas fa-chart-bar"></i>
+                                            <span>View Reports</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>admin/qr_scanner.php" class="quick-action-btn">
+                                            <i class="fas fa-qrcode"></i>
+                                            <span>QR Scanner</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     <?php elseif ($user_role == 'trainer'): ?>
                         <div class="col-md-6 mb-4">
-                            <div class="stats-card bg-primary">
+                            <div class="stats-card bg-primary slide-up">
                                 <div class="card-body">
-                                    <h5 class="card-title">Assigned Members</h5>
-                                    <h2><?php echo $stats['members']; ?></h2>
-                                    <div class="icon"><i class="fas fa-users"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Assigned Members</h5>
+                                            <h2><?php echo $stats['members']; ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-users me-1"></i> Under your guidance
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-users"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <div class="stats-card bg-warning">
+                            <div class="stats-card bg-warning slide-up" style="animation-delay: 0.1s;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Today's Sessions</h5>
-                                    <h2><?php echo $stats['sessions']; ?></h2>
-                                    <div class="icon"><i class="fas fa-clock"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Today's Sessions</h5>
+                                            <h2><?php echo $stats['sessions']; ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-dumbbell me-1"></i> Training sessions
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-clock"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Quick Actions for Trainer -->
+                        <div class="col-12 mb-4">
+                            <div class="card-modern slide-up" style="animation-delay: 0.2s;">
+                                <div class="card-header">
+                                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                                </div>
+                                <div class="card-body">
+                                    <div class="quick-actions-grid">
+                                        <a href="<?php echo SITE_URL; ?>trainer/index.php" class="quick-action-btn">
+                                            <i class="fas fa-users"></i>
+                                            <span>My Members</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>trainer/plans.php" class="quick-action-btn">
+                                            <i class="fas fa-clipboard-list"></i>
+                                            <span>Training Plans</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>trainer/attendance.php" class="quick-action-btn">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <span>Attendance</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     <?php elseif ($user_role == 'member'): ?>
                         <div class="col-md-6 mb-4">
-                            <div class="stats-card bg-primary">
+                            <div class="stats-card bg-primary slide-up">
                                 <div class="card-body">
-                                    <h5 class="card-title">Membership Status</h5>
-                                    <h2><?php echo ucfirst($stats['status']); ?></h2>
-                                    <div class="icon"><i class="fas fa-id-card"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Membership Status</h5>
+                                            <h2><?php echo ucfirst($stats['status']); ?></h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-check-circle me-1"></i> Current status
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-id-card"></i></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <div class="stats-card bg-secondary">
+                            <div class="stats-card bg-secondary slide-up" style="animation-delay: 0.1s;">
                                 <div class="card-body">
-                                    <h5 class="card-title">This Month's Attendance</h5>
-                                    <h2><?php echo $stats['attendance']; ?> days</h2>
-                                    <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">This Month's Attendance</h5>
+                                            <h2><?php echo $stats['attendance']; ?> days</h2>
+                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                                <i class="fas fa-fire me-1"></i> Keep it up!
+                                            </p>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions for Member -->
+                        <div class="col-12 mb-4">
+                            <div class="card-modern slide-up" style="animation-delay: 0.2s;">
+                                <div class="card-header">
+                                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                                </div>
+                                <div class="card-body">
+                                    <div class="quick-actions-grid">
+                                        <a href="<?php echo SITE_URL; ?>member/attendance.php" class="quick-action-btn">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>My Attendance</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>member/workouts.php" class="quick-action-btn">
+                                            <i class="fas fa-dumbbell"></i>
+                                            <span>Workout Plans</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>member/diets.php" class="quick-action-btn">
+                                            <i class="fas fa-utensils"></i>
+                                            <span>Diet Plans</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>member/classes.php" class="quick-action-btn">
+                                            <i class="fas fa-users"></i>
+                                            <span>Group Classes</span>
+                                        </a>
+                                        <a href="<?php echo SITE_URL; ?>member/profile.php" class="quick-action-btn">
+                                            <i class="fas fa-user-circle"></i>
+                                            <span>My Profile</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
+
+            <?php include 'includes/footer.php'; ?>
         </div>
     </div>
     </div>
