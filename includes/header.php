@@ -1,12 +1,14 @@
+<?php
+// Get settings for the header
+$header_settings_query = $conn->query("SELECT gym_name, tagline, logo FROM settings WHERE id = 1");
+$header_settings = $header_settings_query->fetch_assoc();
+?>
 <body class="sidebar-open">
 <div class="modern-sidebar" id="sidebar">
     <div class="sidebar-brand">
         <div class="brand-logo">
-            <?php 
-            // Simulating settings for demonstration
-            $settings = ['logo' => '']; 
-            if (!empty($settings['logo'])): ?>
-                <img src="<?php echo 'path/to/your/logo.png'; ?>" alt="Logo" class="sidebar-logo-img">
+            <?php if (!empty($header_settings['logo'])): ?>
+                <img src="<?php echo SITE_URL . $header_settings['logo']; ?>" alt="Logo" class="sidebar-logo-img">
             <?php else: ?>
                 <div class="sidebar-logo-icon">
                     <i class="fas fa-dumbbell"></i>
@@ -14,8 +16,8 @@
             <?php endif; ?>
         </div>
         <div class="brand-text">
-            <h4 class="brand-name"><?php echo 'GymName'; ?></h4>
-            <p class="brand-tagline"><?php echo 'Stay Fit'; ?></p>
+            <h4 class="brand-name"><?php echo htmlspecialchars($header_settings['gym_name'] ?? 'GymName'); ?></h4>
+            <p class="brand-tagline"><?php echo htmlspecialchars($header_settings['tagline'] ?? 'Stay Fit'); ?></p>
         </div>
         <button class="sidebar-close-btn" id="sidebarClose">
             <i class="fas fa-times"></i>
