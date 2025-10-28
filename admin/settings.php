@@ -76,9 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_user'])) {
 
             if ($stmt->execute()) {
                 $user_success = $user ? "User updated successfully." : "User added successfully.";
-                if (!$user) {
-                    // Clear form for new user
-                    $user = null;
+                if ($user) {
+                    // Refresh user data after update
+                    $result = $conn->query("SELECT u.*, r.name as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id WHERE u.id = {$user['id']}");
+                    $user = $result->fetch_assoc();
+                } else {
+                    $user = null; // Clear form for new user
                 }
             } else {
                 $user_errors[] = "Error saving user.";
@@ -93,23 +96,22 @@ $errors = [];
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_settings'])) {
+    // Fetch current settings to get existing logo
+    $current_settings = $conn->query("SELECT * FROM settings WHERE id = 1")->fetch_assoc();
+
     $gym_name = sanitize($_POST['gym_name']);
     $contact = sanitize($_POST['contact']);
     $address = sanitize($_POST['address']);
     $email = sanitize($_POST['email']);
     $tagline = sanitize($_POST['tagline']);
+    $logo_path = $current_settings['logo'] ?? '';
 
     // Handle logo upload
-    $logo_path = '';
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $max_size = 2 * 1024 * 1024; // 2MB
 
-        if (!in_array($_FILES['logo']['type'], $allowed_types)) {
-            $errors[] = "Only JPG, PNG, and GIF files are allowed.";
-        } elseif ($_FILES['logo']['size'] > $max_size) {
-            $errors[] = "File size must be less than 2MB.";
-        } else {
+        if (in_array($_FILES['logo']['type'], $allowed_types) && $_FILES['logo']['size'] <= $max_size) {
             $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
             $filename = 'logo_' . time() . '.' . $ext;
             $upload_path = '../assets/images/' . $filename;
@@ -119,6 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_settings'])) {
             } else {
                 $errors[] = "Failed to upload logo.";
             }
+        } else {
+            $errors[] = "Invalid file type or size for logo.";
         }
     }
 
@@ -127,39 +131,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_settings'])) {
     }
 
     if (empty($errors)) {
-        // Check if settings exist
-        $result = $conn->query("SELECT id FROM settings LIMIT 1");
-        if ($result->num_rows > 0) {
-            // Update existing
-            $stmt = $conn->prepare("UPDATE settings SET gym_name=?, contact=?, address=?, email=?, tagline=? WHERE id=1");
-            $stmt->bind_param("sssss", $gym_name, $contact, $address, $email, $tagline);
-        } else {
-            // Insert new
-            $stmt = $conn->prepare("INSERT INTO settings (gym_name, contact, address, email, tagline) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $gym_name, $contact, $address, $email, $tagline);
-        }
+        // Update settings in the database
+        $stmt = $conn->prepare("UPDATE settings SET gym_name=?, contact=?, address=?, email=?, tagline=?, logo=? WHERE id=1");
+        $stmt->bind_param("ssssss", $gym_name, $contact, $address, $email, $tagline, $logo_path);
 
         if ($stmt->execute()) {
-            // Update logo if uploaded
-            if ($logo_path) {
-                $conn->query("UPDATE settings SET logo='$logo_path' WHERE id=1");
-            }
             $success = "Settings updated successfully!";
+            // Refresh settings after update
+            $settings = $conn->query("SELECT * FROM settings WHERE id = 1")->fetch_assoc();
         } else {
-            $errors[] = "Failed to update settings.";
+            $errors[] = "Failed to update settings. Error: " . $stmt->error;
         }
         $stmt->close();
     }
 }
 
-// Get current settings
-$settings = $conn->query("SELECT * FROM settings LIMIT 1")->fetch_assoc();
-
-// Get all users
-$users = $conn->query("SELECT u.*, r.name as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id ORDER BY u.id");
 
 // Get all roles for dropdown
 $roles = $conn->query("SELECT * FROM roles ORDER BY name");
+
+// Get all users for the User Management table
+$users = $conn->query("SELECT u.*, r.name as role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id ORDER BY u.id");
+
+// Get current settings
+$settings = $conn->query("SELECT * FROM settings WHERE id = 1")->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -168,19 +163,19 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Settings - <?php echo SITE_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
 <body>
-    <div class="main-wrapper">
-    <?php include '../includes/header.php'; ?>
-
-    <div class="page-content">
-        <div class="container-fluid">
-        <div class="row">
+        <div class="main-wrapper">
+         <?php include '../includes/header.php'; ?>  
+        <div class="page-content">
             <div class="col-12">
                 <div class="card card-modern fade-in">
                     <div class="card-header">
@@ -228,30 +223,30 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Gym Name *</label>
-                                                <input type="text" class="form-control" name="gym_name" value="<?php echo $settings['gym_name'] ?? ''; ?>" required>
+                                                <input type="text" class="form-control" name="gym_name" value="<?php echo htmlspecialchars($settings['gym_name'] ?? ''); ?>" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Contact Number</label>
-                                                <input type="text" class="form-control" name="contact" value="<?php echo $settings['contact'] ?? ''; ?>">
+                                                <input type="text" class="form-control" name="contact" value="<?php echo htmlspecialchars($settings['contact'] ?? ''); ?>">
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">Email Address</label>
-                                        <input type="email" class="form-control" name="email" value="<?php echo $settings['email'] ?? ''; ?>">
+                                        <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($settings['email'] ?? ''); ?>">
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">Address</label>
-                                        <textarea class="form-control" name="address" rows="3"><?php echo $settings['address'] ?? ''; ?></textarea>
+                                        <textarea class="form-control" name="address" rows="3"><?php echo htmlspecialchars($settings['address'] ?? ''); ?></textarea>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label">Tagline</label>
-                                        <input type="text" class="form-control" name="tagline" value="<?php echo $settings['tagline'] ?? ''; ?>" placeholder="e.g., Train Hard, Stay Fit">
+                                        <input type="text" class="form-control" name="tagline" value="<?php echo htmlspecialchars($settings['tagline'] ?? ''); ?>" placeholder="e.g., Train Hard, Stay Fit">
                                     </div>
 
                                     <div class="mb-3">
@@ -455,3 +450,6 @@ $roles = $conn->query("SELECT * FROM roles ORDER BY name");
             });
         <?php endif; ?>
     </script>
+   
+</body>
+</html>

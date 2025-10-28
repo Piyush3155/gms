@@ -261,12 +261,12 @@ $total_expiring = $critical_count + $warning_count;
                                             <?php echo $status_text; ?>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="d-flex gap-2">
                                         <a href="<?php echo $wa_link; ?>" target="_blank" class="btn btn-sm btn-success me-1" title="Send WhatsApp Message">
-                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                            <i class="fab fa-whatsapp"></i> 
                                         </a>
                                         <button class="btn btn-sm btn-primary" onclick="sendEmail('<?php echo $member['email']; ?>', '<?php echo $member['name']; ?>', '<?php echo $member['expiry_date']; ?>', <?php echo $days_remaining; ?>)">
-                                            <i class="fas fa-envelope"></i> Email
+                                            <i class="fas fa-envelope"></i> 
                                         </button>
                                     </td>
                                 </tr>

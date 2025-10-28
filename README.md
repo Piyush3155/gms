@@ -245,15 +245,6 @@ This script checks:
 
 Run this script after installation to ensure everything is working correctly.
 
-## Future Enhancements
-
-- Payment gateway integration (Stripe, PayPal)
-- Mobile app development
-- Advanced analytics with machine learning
-- Online booking system for personal training
-- Integration with fitness wearables
-- Automated social media posting
-
 ## Version History
 
 ### v2.0.0 - Enhanced Gym Management System

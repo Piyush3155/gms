@@ -122,7 +122,7 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
                             <td><?php echo $row['hips'] ? $row['hips'] . ' cm' : '-'; ?></td>
                             <td><?php echo $row['biceps'] ? $row['biceps'] . ' cm' : '-'; ?></td>
                             <td><?php echo $row['notes'] ? substr($row['notes'], 0, 50) . (strlen($row['notes']) > 50 ? '...' : '') : '-'; ?></td>
-                            <td>
+                            <td class="d-flex gap-2">
                                 <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
                                 <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>

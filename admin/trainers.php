@@ -121,7 +121,7 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                             <td><?php echo $row['experience']; ?></td>
                             <td>$<?php echo number_format($row['salary'], 2); ?></td>
                             <td><?php echo $row['member_count']; ?></td>
-                            <td class="text-center">
+                            <td class="text-center d-flex gap-2 justify-content-center">
                                 <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
                                 <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
