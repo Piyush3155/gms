@@ -60,20 +60,10 @@ class PDF extends FPDF {
         // Gym Logo and Info Section
         
         // 1. Logo Path Sanitization (Security Improvement)
-        // Ensure only alphanumeric, hyphen, underscore, and dot characters are allowed in the filename
-        $safe_logo_filename = preg_replace('/[^a-zA-Z0-9\-\_\.]/', '', $this->settings['logo']);
-        $logo_path = '../../assets/images/' . $safe_logo_filename;
-
-        if (!empty($safe_logo_filename) && file_exists($logo_path)) {
-            try {
-                // Image with max size 25mm width
-                $this->Image($logo_path, 10, 8, 25); 
-            } catch (Exception $e) {
-                error_log('Error loading logo: ' . $e->getMessage());
-            }
-        } else {
-            error_log('Logo file not found or inaccessible: ' . $logo_path);
-        }
+        $logo_path = '../assets/images/' . basename($this->settings['logo']);;
+        if (file_exists($logo_path)) {
+            $this->Image($logo_path, 10, 5, 30);
+        }   
 
         // 2. Gym Name and Info (Right aligned)
         $this->SetTextColor(0, 0, 0); // Black text
