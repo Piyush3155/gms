@@ -46,6 +46,14 @@ switch ($method) {
         
         if ($stmt->execute()) {
             $new_id = $conn->insert_id;
+            
+            // Generate QR code
+            $qr_code = 'GMS_MEMBER_' . $new_id . '_' . md5($new_id . $data['email']);
+            $update_stmt = $conn->prepare("UPDATE members SET qr_code = ? WHERE id = ?");
+            $update_stmt->bind_param("si", $qr_code, $new_id);
+            $update_stmt->execute();
+            $update_stmt->close();
+            
             $stmt->close();
             send_response(['id' => $new_id, 'message' => 'Member created successfully'], 201);
         } else {

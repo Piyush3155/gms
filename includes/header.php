@@ -107,6 +107,36 @@ $header_settings = $header_settings_query->fetch_assoc();
                         <span class="menu-text">Notifications</span>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/inventory.php" class="menu-link">
+                        <i class="fas fa-boxes menu-icon"></i>
+                        <span class="menu-text">Inventory</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/suppliers.php" class="menu-link">
+                        <i class="fas fa-truck menu-icon"></i>
+                        <span class="menu-text">Suppliers</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/sales.php" class="menu-link">
+                        <i class="fas fa-shopping-cart menu-icon"></i>
+                        <span class="menu-text">Sales</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/payroll.php" class="menu-link">
+                        <i class="fas fa-money-check menu-icon"></i>
+                        <span class="menu-text">Payroll</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/feedback.php" class="menu-link">
+                        <i class="fas fa-comments menu-icon"></i>
+                        <span class="menu-text">Feedback</span>
+                    </a>
+                </li>
                 <li class="menu-item has-submenu">
                     <a href="#" class="menu-link" data-bs-toggle="collapse" data-bs-target="#financeMenu">
                         <i class="fas fa-wallet menu-icon"></i>
@@ -143,6 +173,24 @@ $header_settings = $header_settings_query->fetch_assoc();
                     <a href="<?php echo SITE_URL; ?>admin/settings.php" class="menu-link">
                         <i class="fas fa-cog menu-icon"></i>
                         <span class="menu-text">Settings</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/activity_log.php" class="menu-link">
+                        <i class="fas fa-history menu-icon"></i>
+                        <span class="menu-text">Activity Log</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/rbac.php" class="menu-link">
+                        <i class="fas fa-user-shield menu-icon"></i>
+                        <span class="menu-text">RBAC</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="<?php echo SITE_URL; ?>admin/reception.php" class="menu-link">
+                        <i class="fas fa-concierge-bell menu-icon"></i>
+                        <span class="menu-text">Reception</span>
                     </a>
                 </li>
             <?php elseif ($_SESSION['user_role'] == 'trainer'): ?>

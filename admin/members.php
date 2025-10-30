@@ -49,6 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$member) {
                 // New member added - generate admission receipt
                 $new_member_id = $conn->insert_id;
+                
+                // Generate QR code
+                $qr_code = 'GMS_MEMBER_' . $new_member_id . '_' . md5($new_member_id . $email);
+                $update_stmt = $conn->prepare("UPDATE members SET qr_code = ? WHERE id = ?");
+                $update_stmt->bind_param("si", $qr_code, $new_member_id);
+                $update_stmt->execute();
+                $update_stmt->close();
+                
                 // Redirect to generate PDF receipt
                 redirect("generate_admission_receipt.php?member_id=$new_member_id&msg=1");
             } else {

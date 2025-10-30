@@ -22,6 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['quick_register'])) {
     if ($stmt->execute()) {
         $member_id = $conn->insert_id;
         
+        // Generate QR code
+        $qr_code = 'GMS_MEMBER_' . $member_id . '_' . md5($member_id . $email);
+        $update_stmt = $conn->prepare("UPDATE members SET qr_code = ? WHERE id = ?");
+        $update_stmt->bind_param("si", $qr_code, $member_id);
+        $update_stmt->execute();
+        $update_stmt->close();
+        
         // Insert payment
         $invoice_no = 'INV' . date('Ymd') . $member_id;
         $stmt2 = $conn->prepare("INSERT INTO payments (member_id, plan_id, amount, payment_date, method, invoice_no, status) VALUES (?, ?, ?, ?, ?, ?, 'paid')");
