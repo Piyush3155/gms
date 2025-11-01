@@ -24,7 +24,7 @@ $header_settings = $header_settings_query->fetch_assoc();
         </button>
     </div>
 
-    <div class="sidebar-profile">
+    <!-- <div class="sidebar-profile">
         <div class="profile-avatar">
             <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
         </div>
@@ -32,7 +32,7 @@ $header_settings = $header_settings_query->fetch_assoc();
             <h6 class="profile-name"><?php echo $_SESSION['user_name']; ?></h6>
             <span class="profile-role"><?php echo ucfirst($_SESSION['user_role']); ?></span>
         </div>
-    </div>
+    </div> -->
 
     <div class="sidebar-menu">
         <ul class="menu-list">
@@ -314,7 +314,7 @@ $header_settings = $header_settings_query->fetch_assoc();
 
                 <div class="header-action-item">
                     <div class="dropdown">
-                        <button class="user-menu-btn" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- <button class="user-menu-btn" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar">
                                 <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
                             </div>
@@ -323,19 +323,19 @@ $header_settings = $header_settings_query->fetch_assoc();
                                 <span class="user-role"><?php echo ucfirst($_SESSION['user_role']); ?></span>
                             </div>
                             <i class="fas fa-chevron-down ms-2 d-none d-lg-block"></i>
-                        </button>
+                        </button> -->
+                        <div class="user-details d-none d-lg-block" >
+                            <!--display in dropdown signout button and profile link-->
+                            <span class="user-name "><?php echo $_SESSION['user_name']; ?></span>
+                        </div>
                         <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
-                            <li class="dropdown-header">
+                            <!-- <li class="dropdown-header">
                                 <div class="dropdown-user-info">
-                                    <div class="dropdown-avatar">
-                                        <?php echo strtoupper(substr($_SESSION['user_name'], 0, 1)); ?>
-                                    </div>
                                     <div>
                                         <h6 class="mb-0"><?php echo $_SESSION['user_name']; ?></h6>
-                                        <small class="text-muted"><?php echo ucfirst($_SESSION['user_role']); ?></small>
                                     </div>
                                 </div>
-                            </li>
+                            </li> -->
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="<?php echo SITE_URL; ?><?php echo $_SESSION['user_role']; ?>/profile.php">
@@ -443,6 +443,40 @@ if (isset($_GET['msg'])) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo SITE_URL; ?>assets/js/sidebar.js"></script>
 <script id="main-script" src="<?php echo SITE_URL; ?>assets/js/main.js" data-site-url="<?php echo SITE_URL; ?>"></script>
+<!-- Web icon -->
+<link rel="icon" type="image/x-icon" href="<?php echo SITE_URL; ?>assets/images/web.png">
+<link rel="shortcut icon" href="<?php echo SITE_URL; ?>assets/images/web.png">
+<script>
+// Ensure favicon is present in <head> even though this include is loaded inside <body>
+(function(){
+    var href = '<?php echo SITE_URL; ?>assets/images/web.png';
+    function setFavicon(h){
+        var head = document.head || document.getElementsByTagName('head')[0];
+        if(!head) return;
+        // Check existing icons
+        var existing = head.querySelectorAll('link[rel~="icon"], link[rel~="shortcut icon"]');
+        var hasCorrect = false;
+        existing.forEach(function(l){ if(l.getAttribute('href') === h) hasCorrect = true; });
+        if(hasCorrect) return;
+        // Add or update
+        var link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/x-icon';
+        link.href = h;
+        head.appendChild(link);
+        var link2 = document.createElement('link');
+        link2.rel = 'shortcut icon';
+        link2.href = h;
+        head.appendChild(link2);
+    }
+    if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', function(){ setFavicon(href); });
+    } else {
+        setFavicon(href);
+    }
+})();
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Activate current page link in sidebar
