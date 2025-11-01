@@ -132,63 +132,6 @@ $plans = $conn->query("SELECT * FROM plans");
         </div>
     </div>
 
-    <!-- Plan Modal -->
-    <div class="modal fade" id="planModal" tabindex="-1">
-        <div class="modal-dialog modal-modern">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $plan ? 'Edit' : 'Add'; ?> Plan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" class="form-modern">
-                    <div class="modal-body">
-                        <?php if (!empty($errors)): ?>
-                            <div class="alert alert-danger alert-modern">
-                                <div>
-                                    <h5 class="alert-heading">Error!</h5>
-                                    <ul class="mb-0">
-                                        <?php foreach ($errors as $error): ?>
-                                            <li><?php echo $error; ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fas fa-id-card"></i>Name *</label>
-                            <input type="text" class="form-control" name="name" value="<?php echo $plan['name'] ?? ''; ?>" required>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-calendar-alt"></i>Duration (Months)</label>
-                                    <input type="number" class="form-control" name="duration_months" value="<?php echo $plan['duration_months'] ?? ''; ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-dollar-sign"></i>Amount *</label>
-                                    <input type="number" step="0.01" class="form-control" name="amount" value="<?php echo $plan['amount'] ?? ''; ?>" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label"><i class="fas fa-align-left"></i>Description</label>
-                            <textarea class="form-control" name="description" rows="3"><?php echo $plan['description'] ?? ''; ?></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-modern">Save Plan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Include libraries for export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -200,6 +143,8 @@ $plans = $conn->query("SELECT * FROM plans");
 
     <script>
         $(document).ready(function() {
+            // PHP sets this flag when editing a plan so the modal is shown after DataTable init
+            var showPlanModal = <?php echo $plan ? 'true' : 'false'; ?>;
             $('#datatables').DataTable({
                 "pagingType": "full_numbers",
                 "lengthMenu": [
@@ -214,14 +159,21 @@ $plans = $conn->query("SELECT * FROM plans");
             });
 
             var table = $('#datatables').DataTable();
+
+            // Show edit modal only after DataTable is ready to avoid blinking
+            if (showPlanModal) {
+                try {
+                    var modalEl = document.getElementById('planModal');
+                    if (modalEl) {
+                        var modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                } catch (e) {
+                    console && console.error('Error showing modal', e);
+                }
+            }
         });
 
-        <?php if ($plan): ?>
-            document.addEventListener('DOMContentLoaded', function() {
-                var modal = new bootstrap.Modal(document.getElementById('planModal'));
-                modal.show();
-            });
-        <?php endif; ?>
 
         // Export to Excel
         function exportToExcel() {
@@ -288,6 +240,63 @@ $plans = $conn->query("SELECT * FROM plans");
             doc.save('Membership_Plans_' + new Date().toISOString().slice(0,10) + '.pdf');
         }
     </script>
+        </div>
+    </div>
+
+    <!-- Plan Modal placed at end of document to avoid being moved by other plugins -->
+    <div class="modal fade" id="planModal" tabindex="-1">
+        <div class="modal-dialog modal-modern">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?php echo $plan ? 'Edit' : 'Add'; ?> Plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" class="form-modern">
+                    <div class="modal-body">
+                        <?php if (!empty($errors)): ?>
+                            <div class="alert alert-danger alert-modern">
+                                <div>
+                                    <h5 class="alert-heading">Error!</h5>
+                                    <ul class="mb-0">
+                                        <?php foreach ($errors as $error): ?>
+                                            <li><?php echo $error; ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-id-card"></i>Name *</label>
+                            <input type="text" class="form-control" name="name" value="<?php echo $plan['name'] ?? ''; ?>" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="fas fa-calendar-alt"></i>Duration (Months)</label>
+                                    <input type="number" class="form-control" name="duration_months" value="<?php echo $plan['duration_months'] ?? ''; ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="fas fa-dollar-sign"></i>Amount *</label>
+                                    <input type="number" step="0.01" class="form-control" name="amount" value="<?php echo $plan['amount'] ?? ''; ?>" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-align-left"></i>Description</label>
+                            <textarea class="form-control" name="description" rows="3"><?php echo $plan['description'] ?? ''; ?></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-modern">Save Plan</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     </div>

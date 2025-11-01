@@ -83,13 +83,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Management - <?php echo SITE_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
-    <link href="../assets/css/custom.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="../assets/css/custom.ChatGPT can make mistakes. Check important infcss" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
@@ -140,11 +138,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                             <td><?php echo $row['plan_name']; ?></td>
                             <td><?php echo $row['expiry_date'] ? date('M d, Y', strtotime($row['expiry_date'])) : 'N/A'; ?></td>
                             <td><span class="badge-status badge-<?php echo $row['status'] == 'active' ? 'active' : 'inactive'; ?>"><?php echo ucfirst($row['status']); ?></span></td>
-                            <td class="text-center">
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="renew_membership.php?member_id=<?php echo $row['id']; ?>" class="btn btn-icon btn-success" title="Renew Membership"><i class="bi bi-arrow-clockwise"></i></a>
-                                <a href="generate_admission_receipt.php?member_id=<?php echo $row['id']; ?>" class="btn btn-icon btn-info" title="Receipt" target="_blank"><i class="bi bi-receipt"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                            <td class="text-center gap-2 d-flex">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning btn-sm" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="renew_membership.php?member_id=<?php echo $row['id']; ?>" class="btn btn-icon btn-success btn-sm" title="Renew Membership"><i class="bi bi-arrow-clockwise"></i></a>
+                                <a href="generate_admission_receipt.php?member_id=<?php echo $row['id']; ?>" class="btn btn-icon btn-info btn-sm" title="Receipt" target="_blank"><i class="bi bi-receipt"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger btn-sm" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -173,7 +171,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                     <h5 class="modal-title"><?php echo $member ? 'Edit' : 'Add'; ?> Member</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST" class="form-modern">
+                <form method="POST" class="form-modern" autocomplete="off">
                     <div class="modal-body">
                         <?php if (!empty($errors)): ?>
                             <div class="alert alert-danger alert-modern">
@@ -297,8 +295,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS (jQuery is loaded in includes/header.php) -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 
@@ -306,27 +303,26 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
         $(document).ready(function() {
             $('#datatables').DataTable({
                 "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
-                }
+                responsive: true
             });
 
-            var table = $('#datatables').DataTable();
+            // Attach modal lifecycle listeners for debugging
+            (function() {
+                var el = document.getElementById('memberModal');
+                if (!el) return;
+                ['show.bs.modal','shown.bs.modal','hide.bs.modal','hidden.bs.modal'].forEach(function(evt) {
+                    el.addEventListener(evt, function() { console.log('memberModal event:', evt); });
+                });
+            })();
+
+            <?php if ((isset($_GET['edit']) && is_numeric($_GET['edit'])) || !empty($errors)): ?>
+            console.log('Server requested auto-open of memberModal');
+            var memberModal = new bootstrap.Modal(document.getElementById('memberModal'), {
+                keyboard: false
+            });
+            memberModal.show();
+            <?php endif; ?>
         });
-
-        // Show modal if editing
-        <?php if ($member): ?>
-            document.addEventListener('DOMContentLoaded', function() {
-                var modal = new bootstrap.Modal(document.getElementById('memberModal'));
-                modal.show();
-            });
-        <?php endif; ?>
 
         // Export to Excel
         function exportToExcel() {
@@ -419,7 +415,6 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
             
             doc.save('Members_' + new Date().toISOString().slice(0,10) + '.pdf');
         }
-    </script>
-       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</script>
 </body>
 </html>

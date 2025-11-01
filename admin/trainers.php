@@ -51,6 +51,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// If POST submission produced errors, repopulate $trainer with submitted values
+// so the modal can show the user's input when the page reloads.
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($errors)) {
+    $trainer = [
+        'name' => $name ?? '',
+        'specialization' => $specialization ?? '',
+        'contact' => $contact ?? '',
+        'email' => $email ?? '',
+        'experience' => $experience ?? '',
+        'salary' => $salary ?? '',
+        'join_date' => $join_date ?? date('Y-m-d'),
+    ];
+}
+
 // Get all trainers
 $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers t LEFT JOIN members m ON t.id = m.trainer_id GROUP BY t.id");
 ?>
@@ -67,9 +81,7 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
     <!-- DataTables CSS -->
-       
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 </head>
 <body>
@@ -145,7 +157,123 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
         </div>
     </div>
 
-    <!-- Trainer Modal -->
+    <!-- Include libraries for export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Bootstrap is loaded in includes/header.php; avoid duplicate include -->
+
+    <script>
+        $(document).ready(function() {
+            // showTrainerModal flag is set from PHP when ?edit=<id> is present or when POST produced errors
+            var showTrainerModal = <?php echo (!empty($trainer) || !empty($errors)) ? 'true' : 'false'; ?>;
+
+            $('#datatables').DataTable({
+                "pagingType": "full_numbers",
+                "lengthMenu": [
+                    [10, 25, 50, -1],
+                    [10, 25, 50, "All"]
+                ],
+                responsive: true,
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search records",
+                }
+            });
+
+            var table = $('#datatables').DataTable();
+
+            // Show the modal only after DataTable init to avoid blinking/jumping
+            if (showTrainerModal) {
+                try {
+                    var modalEl = document.getElementById('trainerModal');
+                    if (modalEl) {
+                        var modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                } catch (e) {
+                    console && console.error('Error showing trainer modal', e);
+                }
+            }
+        });
+
+        // Export to Excel
+        function exportToExcel() {
+            const table = document.getElementById('datatables');
+            const wb = XLSX.utils.book_new();
+            
+            const clonedTable = table.cloneNode(true);
+            const rows = clonedTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                const lastCell = row.querySelector('th:last-child, td:last-child');
+                if (lastCell) lastCell.remove();
+            });
+            
+            const ws = XLSX.utils.table_to_sheet(clonedTable);
+            ws['!cols'] = [{wch: 5}, {wch: 20}, {wch: 20}, {wch: 25}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 10}];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Trainers');
+            XLSX.writeFile(wb, 'Trainers_' + new Date().toISOString().slice(0,10) + '.xlsx');
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            doc.setFontSize(18);
+            doc.text('Trainer List', 14, 15);
+            doc.setFontSize(10);
+            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
+            
+            const table = document.getElementById('datatables');
+            const rows = [];
+            const headers = [];
+            
+            const headerCells = table.querySelectorAll('thead th');
+            headerCells.forEach((cell, index) => {
+                if (index < headerCells.length - 1) {
+                    headers.push(cell.textContent.trim());
+                }
+            });
+            
+            const bodyRows = table.querySelectorAll('tbody tr');
+            bodyRows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell, index) => {
+                    if (index < cells.length - 1) {
+                        rowData.push(cell.textContent.trim());
+                    }
+                });
+                rows.push(rowData);
+            });
+            
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 28,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+            
+            doc.save('Trainers_' + new Date().toISOString().slice(0,10) + '.pdf');
+        }
+    </script>
+
+    
+
+    </div>
+    </div>
+    </div>
+
+    <!-- Trainer Modal (moved to be a direct child of body to avoid blinking caused by DOM moves) -->
     <div class="modal fade" id="trainerModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-modern">
             <div class="modal-content">
@@ -226,108 +354,7 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                 </form>
             </div>
         </div>
-        </div>
-    </div>
     </div>
 
-    <!-- Include libraries for export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            $('#datatables').DataTable({
-                "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
-                }
-            });
-
-            var table = $('#datatables').DataTable();
-        });
-
-        <?php if ($trainer): ?>
-            document.addEventListener('DOMContentLoaded', function() {
-                var modal = new bootstrap.Modal(document.getElementById('trainerModal'));
-                modal.show();
-            });
-        <?php endif; ?>
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('datatables');
-            const wb = XLSX.utils.book_new();
-            
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (lastCell) lastCell.remove();
-            });
-            
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-            ws['!cols'] = [{wch: 5}, {wch: 20}, {wch: 20}, {wch: 25}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 10}];
-            
-            XLSX.utils.book_append_sheet(wb, ws, 'Trainers');
-            XLSX.writeFile(wb, 'Trainers_' + new Date().toISOString().slice(0,10) + '.xlsx');
-        }
-
-        // Export to PDF
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            
-            doc.setFontSize(18);
-            doc.text('Trainer List', 14, 15);
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
-            
-            const table = document.getElementById('datatables');
-            const rows = [];
-            const headers = [];
-            
-            const headerCells = table.querySelectorAll('thead th');
-            headerCells.forEach((cell, index) => {
-                if (index < headerCells.length - 1) {
-                    headers.push(cell.textContent.trim());
-                }
-            });
-            
-            const bodyRows = table.querySelectorAll('tbody tr');
-            bodyRows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) {
-                        rowData.push(cell.textContent.trim());
-                    }
-                });
-                rows.push(rowData);
-            });
-            
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: 28,
-                theme: 'grid',
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [245, 247, 250] }
-            });
-            
-            doc.save('Trainers_' + new Date().toISOString().slice(0,10) + '.pdf');
-        }
-    </script>
 </body>
 </html>
