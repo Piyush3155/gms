@@ -78,11 +78,10 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link href="../assets/css/components.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-wrapper">
@@ -93,22 +92,16 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
         <div class="page-header">
     <h1 class="page-title">Trainer Management</h1>
     <div class="page-options">
-        <button class="btn btn-outline-secondary" onclick="exportToExcel()">
-            <i class="fas fa-file-excel me-1"></i>Export to Excel
-        </button>
-        <button class="btn btn-outline-secondary" onclick="exportToPDF()">
-            <i class="fas fa-file-pdf me-1"></i>Export to PDF
-        </button>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trainerModal">
             <i class="fas fa-plus me-1"></i>Add New Trainer
         </button>
     </div>
 </div>
 
-        <div class="card-modern">
+<div class="card-modern">
     <div class="card-body">
         <div class="table-responsive">
-            <table id="datatables" class="table table-modern" cellspacing="0" width="100%">
+            <table id="trainers-table" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -116,245 +109,117 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
                         <th>Specialization</th>
                         <th>Email</th>
                         <th>Contact</th>
-                        <th>Experience (years)</th>
+                        <th>Experience</th>
                         <th>Salary</th>
                         <th>Members</th>
-                        <th>Actions</th>
+                        <th data-sortable="false" data-exportable="false">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while ($row = $trainers->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo $row['id']; ?></td>
-                            <td><?php echo $row['name']; ?></td>
-                            <td><?php echo $row['specialization']; ?></td>
-                            <td><?php echo $row['email']; ?></td>
-                            <td><?php echo $row['contact']; ?></td>
-                            <td><?php echo $row['experience']; ?></td>
-                            <td>$<?php echo number_format($row['salary'], 2); ?></td>
-                            <td><?php echo $row['member_count']; ?></td>
-                            <td class="text-center d-flex gap-2 justify-content-center">
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-icon btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-icon btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                            <td><?php echo htmlspecialchars($row['name']); ?></td>
+                            <td><?php echo htmlspecialchars($row['specialization']); ?></td>
+                            <td><?php echo htmlspecialchars($row['email']); ?></td>
+                            <td><?php echo htmlspecialchars($row['contact']); ?></td>
+                            <td><?php echo htmlspecialchars($row['experience']); ?> years</td>
+                            <td>₹<?php echo number_format($row['salary'], 2); ?></td>
+                            <td><span class="badge bg-secondary-light"><?php echo $row['member_count']; ?></span></td>
+                            <td class="actions">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure you want to delete this trainer?');"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
+</div>
 
-    <!-- Include libraries for export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-    <!-- Bootstrap is loaded in includes/header.php; avoid duplicate include -->
-
-    <script>
-        $(document).ready(function() {
-            // showTrainerModal flag is set from PHP when ?edit=<id> is present or when POST produced errors
-            var showTrainerModal = <?php echo (!empty($trainer) || !empty($errors)) ? 'true' : 'false'; ?>;
-
-            $('#datatables').DataTable({
-                "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
-                }
-            });
-
-            var table = $('#datatables').DataTable();
-
-            // Show the modal only after DataTable init to avoid blinking/jumping
-            if (showTrainerModal) {
-                try {
-                    var modalEl = document.getElementById('trainerModal');
-                    if (modalEl) {
-                        var modal = new bootstrap.Modal(modalEl);
-                        modal.show();
-                    }
-                } catch (e) {
-                    console && console.error('Error showing trainer modal', e);
-                }
-            }
-        });
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('datatables');
-            const wb = XLSX.utils.book_new();
-            
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (lastCell) lastCell.remove();
-            });
-            
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-            ws['!cols'] = [{wch: 5}, {wch: 20}, {wch: 20}, {wch: 25}, {wch: 15}, {wch: 12}, {wch: 12}, {wch: 10}];
-            
-            XLSX.utils.book_append_sheet(wb, ws, 'Trainers');
-            XLSX.writeFile(wb, 'Trainers_' + new Date().toISOString().slice(0,10) + '.xlsx');
-        }
-
-        // Export to PDF
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            
-            doc.setFontSize(18);
-            doc.text('Trainer List', 14, 15);
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
-            
-            const table = document.getElementById('datatables');
-            const rows = [];
-            const headers = [];
-            
-            const headerCells = table.querySelectorAll('thead th');
-            headerCells.forEach((cell, index) => {
-                if (index < headerCells.length - 1) {
-                    headers.push(cell.textContent.trim());
-                }
-            });
-            
-            const bodyRows = table.querySelectorAll('tbody tr');
-            bodyRows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) {
-                        rowData.push(cell.textContent.trim());
-                    }
-                });
-                rows.push(rowData);
-            });
-            
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: 28,
-                theme: 'grid',
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [245, 247, 250] }
-            });
-            
-            doc.save('Trainers_' + new Date().toISOString().slice(0,10) + '.pdf');
-        }
-    </script>
-
-    
-
-    </div>
-    </div>
-    </div>
-
-    <!-- Trainer Modal (moved to be a direct child of body to avoid blinking caused by DOM moves) -->
-    <div class="modal fade" id="trainerModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-modern">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><?php echo $trainer ? 'Edit' : 'Add'; ?> Trainer</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" class="form-modern">
-                    <div class="modal-body">
-                        <?php if (!empty($errors)): ?>
-                            <div class="alert alert-danger alert-modern">
-                                <div>
-                                    <h5 class="alert-heading">Error!</h5>
-                                    <ul class="mb-0">
-                                        <?php foreach ($errors as $error): ?>
-                                            <li><?php echo $error; ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-user"></i>Name *</label>
-                                    <input type="text" class="form-control" name="name" value="<?php echo $trainer['name'] ?? ''; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-envelope"></i>Email *</label>
-                                    <input type="email" class="form-control" name="email" value="<?php echo $trainer['email'] ?? ''; ?>" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-star"></i>Specialization</label>
-                                    <input type="text" class="form-control" name="specialization" value="<?php echo $trainer['specialization'] ?? ''; ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-phone"></i>Contact</label>
-                                    <input type="text" class="form-control" name="contact" value="<?php echo $trainer['contact'] ?? ''; ?>">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-briefcase"></i>Experience (years)</label>
-                                    <input type="number" class="form-control" name="experience" value="<?php echo $trainer['experience'] ?? ''; ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-dollar-sign"></i>Salary</label>
-                                    <input type="number" step="0.01" class="form-control" name="salary" value="<?php echo $trainer['salary'] ?? ''; ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label"><i class="fas fa-calendar-plus"></i>Join Date</label>
-                                    <input type="date" class="form-control" name="join_date" value="<?php echo $trainer['join_date'] ?? date('Y-m-d'); ?>" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-modern">Save Trainer</button>
-                    </div>
-                </form>
+<!-- Trainer Modal -->
+<div class="modal fade" id="trainerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><?php echo $trainer ? 'Edit' : 'Add'; ?> Trainer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            <form method="POST" class="form-modern" id="trainerForm" autocomplete="off">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Name *</label>
+                            <input type="text" class="form-control" name="name" value="<?php echo htmlspecialchars($trainer['name'] ?? ''); ?>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($trainer['email'] ?? ''); ?>" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" class="form-control" name="specialization" value="<?php echo htmlspecialchars($trainer['specialization'] ?? ''); ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Contact</label>
+                            <input type="text" class="form-control" name="contact" value="<?php echo htmlspecialchars($trainer['contact'] ?? ''); ?>">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Experience (years)</label>
+                            <input type="number" class="form-control" name="experience" value="<?php echo htmlspecialchars($trainer['experience'] ?? ''); ?>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Salary</label>
+                            <input type="number" step="0.01" class="form-control" name="salary" value="<?php echo htmlspecialchars($trainer['salary'] ?? ''); ?>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Join Date</label>
+                            <input type="date" class="form-control" name="join_date" value="<?php echo htmlspecialchars($trainer['join_date'] ?? date('Y-m-d')); ?>" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Trainer</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('trainers-table');
+    if (table) {
+        new DataTable(table, {
+            searchable: true,
+            pagination: true,
+            sortable: true,
+            exportable: true,
+            exportOptions: {
+                fileName: 'GMS_Trainers_Export',
+            }
+        });
+    }
+
+    const trainerModalEl = document.getElementById('trainerModal');
+    if (trainerModalEl) {
+        const modal = new bootstrap.Modal(trainerModalEl);
+        <?php if ((isset($_GET['edit']) && is_numeric($_GET['edit'])) || !empty($errors)): ?>
+        modal.show();
+        <?php endif; ?>
+    }
+    
+    const trainerForm = document.getElementById('trainerForm');
+    if(trainerForm) {
+        new FormValidator(trainerForm);
+    }
+});
+</script>
 </body>
 </html>

@@ -440,9 +440,21 @@ if (isset($_GET['msg'])) {
 }
 ?>
 
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/animations.css">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/components.css">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/responsive.css">
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Export Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
 <script src="<?php echo SITE_URL; ?>assets/js/sidebar.js"></script>
 <script id="main-script" src="<?php echo SITE_URL; ?>assets/js/main.js" data-site-url="<?php echo SITE_URL; ?>"></script>
+<script src="<?php echo SITE_URL; ?>assets/js/enhanced.js"></script>
 <!-- Web icon -->
 <link rel="icon" type="image/x-icon" href="<?php echo SITE_URL; ?>assets/images/web.png">
 <link rel="shortcut icon" href="<?php echo SITE_URL; ?>assets/images/web.png">

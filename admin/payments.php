@@ -54,8 +54,10 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
     <title>Payment & Billing - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
+    <link href="../assets/css/components.css" rel="stylesheet">
 </head>
 <body>
     <div class="main-wrapper">
@@ -64,296 +66,192 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
     <div class="page-content">
         <div class="container-fluid">
         <div class="page-header">
-            <h1 class="page-title"><i class="fas fa-credit-card me-2"></i>Payment & Billing</h1>
-            <div class="page-options">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
-                    <i class="fas fa-plus me-1"></i>Record Payment
-                </button>
+    <h1 class="page-title">Payment & Billing</h1>
+    <div class="page-options">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+            <i class="fas fa-plus me-1"></i>Record Payment
+        </button>
+    </div>
+</div>
+
+<!-- Revenue Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="feature-card">
+            <div class="card-icon bg-success-light text-success">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">₹<?php echo number_format($total_revenue, 2); ?></h3>
+                <p class="card-text">Total Revenue</p>
             </div>
         </div>
-
-        <!-- Revenue Summary -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="info-card">
-                    <div class="info-card-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <p class="info-card-title">Total Revenue</p>
-                        <h2 class="info-card-value">₹<?php echo number_format($total_revenue, 2); ?></h2>
-                    </div>
-                </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+            <div class="card-icon bg-primary-light text-primary">
+                <i class="bi bi-calendar-month"></i>
             </div>
-            <div class="col-md-4">
-                <div class="info-card">
-                    <div class="info-card-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <p class="info-card-title">This Month</p>
-                        <h2 class="info-card-value">₹<?php echo number_format($this_month_revenue, 2); ?></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="info-card">
-                    <div class="info-card-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <p class="info-card-title">Pending Payments</p>
-                        <h2 class="info-card-value"><?php echo $pending_payments; ?></h2>
-                    </div>
-                </div>
+            <div class="card-content">
+                <h3 class="card-title">₹<?php echo number_format($this_month_revenue, 2); ?></h3>
+                <p class="card-text">This Month's Revenue</p>
             </div>
         </div>
-
-        <!-- Payments Table -->
-        <div class="card-modern">
-            <div class="card-body">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Payment History</h5>
-                <div>
-                    <button class="btn btn-success btn-sm me-2" onclick="exportToExcel()">
-                        <i class="fas fa-file-excel me-1"></i>Excel
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="exportToPDF()">
-                        <i class="fas fa-file-pdf me-1"></i>PDF
-                    </button>
-                </div>
+    </div>
+    <div class="col-md-4">
+        <div class="feature-card">
+            <div class="card-icon bg-warning-light text-warning">
+                <i class="bi bi-clock-history"></i>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped" id="paymentsTable">
-                        <thead>
-                            <tr>
-                                <th>Invoice #</th>
-                                <th>Member</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Payment Date</th>
-                                <th>Method</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($payment = $payments->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?php echo $payment['invoice_no']; ?></td>
-                                    <td><?php echo $payment['member_name']; ?></td>
-                                    <td><?php echo $payment['plan_name']; ?></td>
-                                    <td>₹<?php echo number_format($payment['amount'], 2); ?></td>
-                                    <td><?php echo date('M j, Y', strtotime($payment['payment_date'])); ?></td>
-                                    <td>
-                                        <span class="badge bg-secondary">
-                                            <i class="fas fa-<?php
-                                                echo match($payment['method']) {
-                                                    'cash' => 'money-bill-wave',
-                                                    'card' => 'credit-card',
-                                                    'upi' => 'mobile-alt',
-                                                    'bank_transfer' => 'university',
-                                                    default => 'question'
-                                                };
-                                            ?> me-1"></i>
-                                            <?php echo ucfirst(str_replace('_', ' ', $payment['method'])); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-<?php
-                                            echo match($payment['status']) {
-                                                'paid' => 'success',
-                                                'pending' => 'warning',
-                                                'failed' => 'danger',
-                                                default => 'secondary'
-                                            };
-                                        ?>">
-                                            <?php echo ucfirst($payment['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="printInvoice('<?php echo $payment['id']; ?>')">
-                                            <i class="fas fa-print me-1"></i>Print
-                                        </button>
-                                    </td>
-                                </tr>
+            <div class="card-content">
+                <h3 class="card-title"><?php echo $pending_payments; ?></h3>
+                <p class="card-text">Pending Payments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="card-modern">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Payment History</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="payments-table" class="table table-modern" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Member</th>
+                        <th>Plan</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th data-sortable="false" data-exportable="false">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($payment = $payments->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($payment['invoice_no']); ?></td>
+                            <td><?php echo htmlspecialchars($payment['member_name']); ?></td>
+                            <td><?php echo htmlspecialchars($payment['plan_name']); ?></td>
+                            <td>₹<?php echo number_format($payment['amount'], 2); ?></td>
+                            <td><?php echo date('M j, Y', strtotime($payment['payment_date'])); ?></td>
+                            <td><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $payment['method']))); ?></td>
+                            <td>
+                                <span class="status-indicator <?php echo 'status-' . htmlspecialchars($payment['status']); ?>">
+                                    <?php echo ucfirst(htmlspecialchars($payment['status'])); ?>
+                                </span>
+                            </td>
+                            <td class="actions">
+                                <a href="invoice.php?id=<?php echo $payment['id']; ?>" class="btn-icon" title="Print Invoice" target="_blank"><i class="bi bi-printer"></i></a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Record New Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="paymentForm" autocomplete="off">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Member *</label>
+                        <select class="form-select" name="member_id" required>
+                            <option value="">Select Member</option>
+                            <?php mysqli_data_seek($members, 0); while ($member = $members->fetch_assoc()): ?>
+                                <option value="<?php echo $member['id']; ?>"><?php echo htmlspecialchars($member['name']); ?></option>
                             <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Payment Modal -->
-    <div class="modal fade" id="paymentModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Record New Payment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Member</label>
-                            <select class="form-control" name="member_id" required>
-                                <option value="">Select Member</option>
-                                <?php
-                                $members->data_seek(0);
-                                while ($member = $members->fetch_assoc()): ?>
-                                    <option value="<?php echo $member['id']; ?>"><?php echo $member['name']; ?></option>
-                                <?php endwhile; ?>
-                            </select>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Plan *</label>
+                        <select class="form-select" name="plan_id" id="planSelect" required onchange="updateAmount()">
+                            <option value="">Select Plan</option>
+                            <?php mysqli_data_seek($plans, 0); while ($plan = $plans->fetch_assoc()): ?>
+                                <option value="<?php echo $plan['id']; ?>" data-amount="<?php echo $plan['amount']; ?>"><?php echo htmlspecialchars($plan['name']); ?> - ₹<?php echo $plan['amount']; ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" name="amount" id="amountInput" step="0.01" required>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Plan</label>
-                            <select class="form-control" name="plan_id" id="planSelect" required onchange="updateAmount()">
-                                <option value="">Select Plan</option>
-                                <?php
-                                $plans->data_seek(0);
-                                while ($plan = $plans->fetch_assoc()): ?>
-                                    <option value="<?php echo $plan['id']; ?>" data-amount="<?php echo $plan['amount']; ?>"><?php echo $plan['name']; ?> - ₹<?php echo $plan['amount']; ?></option>
-                                <?php endwhile; ?>
-                            </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payment Date *</label>
+                            <input type="date" class="form-control" name="payment_date" value="<?php echo date('Y-m-d'); ?>" required>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">₹</span>
-                                <input type="number" class="form-control" name="amount" id="amountInput" step="0.01" required>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Payment Date</label>
-                                    <input type="date" class="form-control" name="payment_date" value="<?php echo date('Y-m-d'); ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Payment Method</label>
-                                    <select class="form-control" name="method" required>
-                                        <option value="cash">Cash</option>
-                                        <option value="card">Card</option>
-                                        <option value="upi">UPI</option>
-                                        <option value="bank_transfer">Bank Transfer</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-control" name="status" required>
-                                <option value="paid">Paid</option>
-                                <option value="pending">Pending</option>
-                                <option value="failed">Failed</option>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payment Method *</label>
+                            <select class="form-select" name="method" required>
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="upi">UPI</option>
+                                <option value="bank_transfer">Bank Transfer</option>
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" name="record_payment" class="btn btn-modern">Record Payment</button>
+                    <div class="mb-3">
+                        <label class="form-label">Status *</label>
+                        <select class="form-select" name="status" required>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="failed">Failed</option>
+                        </select>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="record_payment" class="btn btn-primary">Record Payment</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <script>
-        function updateAmount() {
-            const select = document.getElementById('planSelect');
-            const amountInput = document.getElementById('amountInput');
-            const selectedOption = select.options[select.selectedIndex];
-            const amount = selectedOption.getAttribute('data-amount');
-            if (amount) {
-                amountInput.value = amount;
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('payments-table');
+    if (table) {
+        new DataTable(table, {
+            searchable: true,
+            pagination: true,
+            sortable: true,
+            exportable: true,
+            exportOptions: {
+                fileName: 'GMS_Payments_Export',
             }
-        }
+        });
+    }
+    
+    const paymentForm = document.getElementById('paymentForm');
+    if(paymentForm) {
+        new FormValidator(paymentForm);
+    }
+});
 
-        function printInvoice(paymentId) {
-            // Simple print functionality - in real app, you'd generate a proper invoice
-            window.open(`invoice.php?id=${paymentId}`, '_blank');
-        }
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('paymentsTable');
-            const wb = XLSX.utils.book_new();
-            
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (lastCell) lastCell.remove();
-            });
-            
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-            ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 12}, {wch: 10}];
-            
-            XLSX.utils.book_append_sheet(wb, ws, 'Payments');
-            XLSX.writeFile(wb, 'Payments_' + new Date().toISOString().slice(0,10) + '.xlsx');
-        }
-
-        // Export to PDF
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            
-            doc.setFontSize(18);
-            doc.text('Payment History', 14, 15);
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
-            
-            const table = document.getElementById('paymentsTable');
-            const rows = [];
-            const headers = [];
-            
-            const headerCells = table.querySelectorAll('thead th');
-            headerCells.forEach((cell, index) => {
-                if (index < headerCells.length - 1) {
-                    headers.push(cell.textContent.trim());
-                }
-            });
-            
-            const bodyRows = table.querySelectorAll('tbody tr');
-            bodyRows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) {
-                        rowData.push(cell.textContent.trim());
-                    }
-                });
-                rows.push(rowData);
-            });
-            
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: 28,
-                theme: 'grid',
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [102, 126, 234], textColor: 255, fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [245, 247, 250] }
-            });
-            
-            doc.save('Payments_' + new Date().toISOString().slice(0,10) + '.pdf');
-        }
-    </script>
-
-    <!-- Include libraries for export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-        </div>
-    </div>
-    </div>
+function updateAmount() {
+    const select = document.getElementById('planSelect');
+    const amountInput = document.getElementById('amountInput');
+    const selectedOption = select.options[select.selectedIndex];
+    const amount = selectedOption.getAttribute('data-amount');
+    amountInput.value = amount || '';
+}
+</script>
 </body>
 </html>

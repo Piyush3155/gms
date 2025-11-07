@@ -141,8 +141,10 @@ while ($row = $popular_classes->fetch_assoc()) {
     <title>Reports & Analytics - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
+    <link href="../assets/css/components.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -151,259 +153,231 @@ while ($row = $popular_classes->fetch_assoc()) {
 
     <div class="page-content">
         <div class="container-fluid">
-        <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Reports & Analytics</h2>
+        <div class="page-header">
+    <h1 class="page-title">Reports & Analytics</h1>
+</div>
 
-        <!-- Key Metrics -->
-        <div class="row mb-4">
-            <?php
-            $total_members = $conn->query("SELECT COUNT(*) as count FROM members")->fetch_assoc()['count'];
-            $active_members = $conn->query("SELECT COUNT(*) as count FROM members WHERE status='active'")->fetch_assoc()['count'];
-            $total_trainers = $conn->query("SELECT COUNT(*) as count FROM trainers")->fetch_assoc()['count'];
-            $total_revenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid'")->fetch_assoc()['total'] ?? 0;
-            $total_equipment = $conn->query("SELECT COUNT(*) as count FROM equipment")->fetch_assoc()['count'];
-            $available_equipment = $conn->query("SELECT COUNT(*) as count FROM equipment WHERE status='available'")->fetch_assoc()['count'];
-            $total_classes = $conn->query("SELECT COUNT(*) as count FROM group_classes WHERE class_date >= CURDATE()")->fetch_assoc()['count'];
-            $total_bookings = $conn->query("SELECT COUNT(*) as count FROM class_bookings WHERE status IN ('confirmed', 'attended')")->fetch_assoc()['count'];
-            ?>
-            <div class="col-md-3">
-                <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-users me-2"></i>Total Members</h5>
-                        <h2><?php echo $total_members; ?></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-user-check me-2"></i>Active Members</h5>
-                        <h2><?php echo $active_members; ?></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-tools me-2"></i>Equipment</h5>
-                        <h2><?php echo $available_equipment; ?>/<?php echo $total_equipment; ?></h2>
-                        <small>Available</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-calendar-alt me-2"></i>Class Bookings</h5>
-                        <h2><?php echo $total_bookings; ?></h2>
-                        <small>This Month</small>
-                    </div>
-                </div>
+<!-- Key Metrics -->
+<div class="row g-4 mb-4">
+    <?php
+    $total_members = $conn->query("SELECT COUNT(*) as count FROM members")->fetch_assoc()['count'];
+    $active_members = $conn->query("SELECT COUNT(*) as count FROM members WHERE status='active'")->fetch_assoc()['count'];
+    $total_revenue_query = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid'");
+    $total_revenue = $total_revenue_query ? $total_revenue_query->fetch_assoc()['total'] ?? 0 : 0;
+    $available_equipment = $conn->query("SELECT COUNT(*) as count FROM equipment WHERE status='available'")->fetch_assoc()['count'];
+    ?>
+    <div class="col-lg-3 col-md-6">
+        <div class="feature-card">
+            <div class="card-icon bg-primary-light text-primary"><i class="bi bi-people-fill"></i></div>
+            <div class="card-content">
+                <h3 class="card-title"><?php echo $total_members; ?></h3>
+                <p class="card-text">Total Members</p>
             </div>
         </div>
-
-        <!-- Charts Row 1 -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Member Growth (Last 12 Months)</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="memberGrowthChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-balance-scale me-2"></i>Revenue vs Expenses (Last 6 Months)</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="revenueExpenseChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="feature-card">
+            <div class="card-icon bg-success-light text-success"><i class="bi bi-person-check-fill"></i></div>
+            <div class="card-content">
+                <h3 class="card-title"><?php echo $active_members; ?></h3>
+                <p class="card-text">Active Members</p>
             </div>
         </div>
-
-        <!-- Charts Row 2 -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Attendance Summary (Last 6 Months)</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="attendanceChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Membership Status Distribution</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="statusChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="feature-card">
+            <div class="card-icon bg-info-light text-info"><i class="bi bi-cash-stack"></i></div>
+            <div class="card-content">
+                <h3 class="card-title">₹<?php echo number_format($total_revenue, 2); ?></h3>
+                <p class="card-text">Total Revenue</p>
             </div>
         </div>
-
-        <!-- Trainer Performance -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Equipment Status Distribution</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="equipmentChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Class Bookings (Last 6 Months)</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="classBookingChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="feature-card">
+            <div class="card-icon bg-warning-light text-warning"><i class="bi bi-tools"></i></div>
+            <div class="card-content">
+                <h3 class="card-title"><?php echo $available_equipment; ?></h3>
+                <p class="card-text">Available Equipment</p>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Additional Info -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>Trainer Performance</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="trainerChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
+<!-- Charts Row 1 -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Member Growth (Last 12 Months)</h5>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Popular Classes</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Class Name</th>
-                                        <th>Total Bookings</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($popular_classes_data as $class): ?>
-                                        <tr>
-                                            <td><?php echo $class['name']; ?></td>
-                                            <td><span class="badge bg-primary"><?php echo $class['booking_count']; ?></span></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="memberGrowthChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+    <div class="col-lg-4">
+        <div class="card-modern">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Membership Status</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // Member Growth Chart
-        const memberGrowthCtx = document.getElementById('memberGrowthChart').getContext('2d');
+<!-- Member Growth Data Table -->
+<div class="card-modern mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Member Growth Data</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="memberGrowthTable" class="table table-modern">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>New Members</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($member_growth_data as $data): ?>
+                    <tr>
+                        <td><?php echo date("F Y", strtotime($data['month'] . '-01')); ?></td>
+                        <td><?php echo $data['count']; ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Charts Row 2 -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Revenue vs Expenses (Last 6 Months)</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="revenueExpenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card-modern">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Popular Classes</h5>
+            </div>
+            <div class="card-body">
+                <table id="popularClassesTable" class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Bookings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($popular_classes_data as $class): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($class['name']); ?></td>
+                                <td><span class="badge bg-primary"><?php echo $class['booking_count']; ?></span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 3 -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card-modern">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Trainer Performance (Members Assigned)</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="trainerChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-modern">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Equipment Status</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="equipmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/chartConfig.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Member Growth Chart
+    const memberGrowthCtx = document.getElementById('memberGrowthChart')?.getContext('2d');
+    if (memberGrowthCtx) {
         const memberGrowthData = <?php echo json_encode($member_growth_data); ?>;
         new Chart(memberGrowthCtx, {
             type: 'line',
             data: {
-                labels: memberGrowthData.map(item => {
-                    const date = new Date(item.month + '-01');
-                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                }),
+                labels: memberGrowthData.map(item => formatChartMonth(item.month)),
                 datasets: [{
                     label: 'New Members',
                     data: memberGrowthData.map(item => item.count),
-                    borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderColor: GMS_COLORS.primary,
+                    backgroundColor: GMS_COLORS.primary_light,
                     tension: 0.4,
                     fill: true
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            options: lineChartOptions
         });
+    }
 
-        // Revenue vs Expense Chart
-        const revenueExpenseCtx = document.getElementById('revenueExpenseChart').getContext('2d');
+    // Revenue vs Expense Chart
+    const revenueExpenseCtx = document.getElementById('revenueExpenseChart')?.getContext('2d');
+    if (revenueExpenseCtx) {
         const revenueExpenseData = <?php echo json_encode($revenue_expense_data); ?>;
         new Chart(revenueExpenseCtx, {
             type: 'bar',
             data: {
-                labels: revenueExpenseData.map(item => {
-                    const date = new Date(item.month + '-01');
-                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                }),
+                labels: revenueExpenseData.map(item => formatChartMonth(item.month)),
                 datasets: [{
                     label: 'Revenue',
                     data: revenueExpenseData.map(item => item.revenue),
-                    backgroundColor: '#43e97b'
+                    backgroundColor: GMS_COLORS.success
                 }, {
                     label: 'Expenses',
                     data: revenueExpenseData.map(item => item.expense),
-                    backgroundColor: '#f5576c'
+                    backgroundColor: GMS_COLORS.danger
                 }]
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            options: barChartOptions
         });
+    }
 
-        // Attendance Chart
-        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
-        const attendanceData = <?php echo json_encode($attendance_data); ?>;
-        new Chart(attendanceCtx, {
-            type: 'bar',
-            data: {
-                labels: attendanceData.map(item => {
-                    const date = new Date(item.month + '-01');
-                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                }),
-                datasets: [{
-                    label: 'Present',
-                    data: attendanceData.map(item => item.present),
-                    backgroundColor: '#4facfe'
-                }, {
-                    label: 'Absent',
-                    data: attendanceData.map(item => item.absent),
-                    backgroundColor: '#f093fb'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-
-        // Status Distribution Chart
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart')?.getContext('2d');
+    if (statusCtx) {
         const statusData = <?php echo json_encode($status_data); ?>;
         new Chart(statusCtx, {
             type: 'doughnut',
@@ -411,93 +385,70 @@ while ($row = $popular_classes->fetch_assoc()) {
                 labels: statusData.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1)),
                 datasets: [{
                     data: statusData.map(item => item.count),
-                    backgroundColor: ['#43e97b', '#f5576c', '#f093fb', '#4facfe']
+                    backgroundColor: [GMS_COLORS.success, GMS_COLORS.danger, GMS_COLORS.warning, GMS_COLORS.info]
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
+            options: doughnutChartOptions
         });
+    }
 
-        // Trainer Performance Chart
-        const trainerCtx = document.getElementById('trainerChart').getContext('2d');
+    // Trainer Performance Chart
+    const trainerCtx = document.getElementById('trainerChart')?.getContext('2d');
+    if (trainerCtx) {
         const trainerData = <?php echo json_encode($trainer_data); ?>;
         new Chart(trainerCtx, {
             type: 'bar',
             data: {
                 labels: trainerData.map(item => item.name),
                 datasets: [{
-                    label: 'Members',
+                    label: 'Members Assigned',
                     data: trainerData.map(item => item.member_count),
-                    backgroundColor: '#667eea'
+                    backgroundColor: GMS_COLORS.primary
                 }]
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
+            options: { ...barChartOptions, indexAxis: 'y', plugins: { legend: { display: false } } }
         });
+    }
 
-        // Equipment Status Chart
-        const equipmentCtx = document.getElementById('equipmentChart').getContext('2d');
+    // Equipment Status Chart
+    const equipmentCtx = document.getElementById('equipmentChart')?.getContext('2d');
+    if (equipmentCtx) {
         const equipmentData = <?php echo json_encode($equipment_data); ?>;
         new Chart(equipmentCtx, {
-            type: 'doughnut',
+            type: 'pie',
             data: {
                 labels: equipmentData.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1).replace('_', ' ')),
                 datasets: [{
                     data: equipmentData.map(item => item.count),
-                    backgroundColor: ['#43e97b', '#f5576c', '#f093fb', '#4facfe', '#667eea']
+                    backgroundColor: [GMS_COLORS.success, GMS_COLORS.warning, GMS_COLORS.danger, GMS_COLORS.info]
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
+            options: { ...doughnutChartOptions, cutout: '0%' }
         });
+    }
 
-        // Class Booking Chart
-        const classBookingCtx = document.getElementById('classBookingChart').getContext('2d');
-        const classBookingData = <?php echo json_encode($class_booking_data); ?>;
-        new Chart(classBookingCtx, {
-            type: 'line',
-            data: {
-                labels: classBookingData.map(item => {
-                    const date = new Date(item.month + '-01');
-                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                }),
-                datasets: [{
-                    label: 'Class Bookings',
-                    data: classBookingData.map(item => item.bookings),
-                    borderColor: '#f093fb',
-                    backgroundColor: 'rgba(240, 147, 251, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
+    // Initialize DataTables
+    const memberGrowthTable = document.getElementById('memberGrowthTable');
+    if (memberGrowthTable) {
+        new DataTable(memberGrowthTable, {
+            exportable: true,
+            exportOptions: {
+                fileName: 'Member-Growth-Report'
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            paging: true,
+            searchable: true
         });
-    </script>
-        </div>
-    </div>
-    </div>
+    }
+
+    const popularClassesTable = document.getElementById('popularClassesTable');
+    if (popularClassesTable) {
+        new DataTable(popularClassesTable, {
+            paging: false,
+            info: false,
+            searching: false
+        });
+    }
+});
+</script>
 </body>
 </html>
