@@ -1,0 +1,696 @@
+/*
+  Responsive Enhancements for GMS
+  Mobile-first responsive design improvements
+*/
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+/* Hide/Show utilities */
+.hide-mobile {
+    @media (max-width: 768px) {
+        display: none !important;
+    }
+}
+
+.show-mobile {
+    display: none !important;
+    @media (max-width: 768px) {
+        display: block !important;
+    }
+}
+
+.show-mobile-flex {
+    display: none !important;
+    @media (max-width: 768px) {
+        display: flex !important;
+    }
+}
+
+/* ============================================
+   RESPONSIVE TABLES
+   ============================================ */
+
+@media (max-width: 991px) {
+    .table-responsive-modern {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive-modern > .table {
+        margin-bottom: 0;
+    }
+
+    /* Card-based table for mobile */
+    .table-card-mobile {
+        display: none;
+    }
+
+    .table-card-mobile.active {
+        display: block;
+    }
+
+    .table-card-mobile .table-card-item {
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--box-shadow-sm);
+    }
+
+    .table-card-mobile .table-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-card-mobile .table-card-body {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .table-card-mobile .table-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-card-mobile .table-card-label {
+        font-weight: 600;
+        color: var(--text-color-light);
+        font-size: 0.875rem;
+    }
+
+    .table-card-mobile .table-card-value {
+        color: var(--text-color);
+        font-weight: 500;
+    }
+}
+
+/* ============================================
+   RESPONSIVE GRID
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .kpi-grid,
+    .quick-actions-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   RESPONSIVE CARDS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-header {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .stats-card {
+        padding: 1.25rem;
+    }
+
+    .stats-card h2 {
+        font-size: 2.5rem;
+    }
+
+    .stats-card .icon {
+        font-size: 4rem;
+        right: 1rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE FORMS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .filter-section {
+        padding: 1rem;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-group .form-group {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* ============================================
+   RESPONSIVE BUTTONS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .action-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .table-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .table-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   RESPONSIVE MODALS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.125rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE PAGE LAYOUT
+   ============================================ */
+
+@media (max-width: 768px) {
+    .page-title-section {
+        padding: 1.5rem 1rem;
+        text-align: center;
+    }
+
+    .page-title-section h1 {
+        font-size: 1.75rem;
+    }
+
+    .page-title-section p {
+        font-size: 0.9375rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .page-header-actions {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE HEADER
+   ============================================ */
+
+@media (max-width: 768px) {
+    .header-container {
+        padding: 0 1rem;
+    }
+
+    .header-search-container {
+        width: 100%;
+        max-width: none;
+    }
+
+    .header-left {
+        flex: 1;
+        gap: 0.75rem;
+    }
+
+    .header-right {
+        gap: 0.5rem;
+    }
+
+    .user-details {
+        display: none !important;
+    }
+
+    .header-action-item.notification-item {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-search-container {
+        display: none;
+    }
+
+    .sidebar-toggle-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE SIDEBAR
+   ============================================ */
+
+@media (max-width: 1199px) {
+    .modern-sidebar {
+        box-shadow: 0 0 50px rgba(0,0,0,0.3);
+    }
+
+    .sidebar-close-btn {
+        display: flex !important;
+    }
+
+    .page-content {
+        margin-left: 0 !important;
+    }
+
+    .modern-header {
+        left: 0 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .modern-sidebar {
+        width: 260px;
+    }
+
+    .sidebar-menu {
+        font-size: 0.9375rem;
+    }
+
+    .menu-link {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .menu-icon {
+        font-size: 1rem;
+        margin-right: 0.75rem;
+    }
+
+    .submenu-link {
+        padding: 0.625rem 1rem 0.625rem 3.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE PROFILE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .profile-header {
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .profile-avatar-large {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .profile-info {
+        text-align: center;
+    }
+
+    .profile-info h2 {
+        font-size: 1.75rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE TIMELINE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 20px;
+    }
+
+    .timeline-item {
+        padding-left: 60px;
+    }
+
+    .timeline-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    .timeline-content {
+        padding: 1rem;
+    }
+}
+
+/* ============================================
+   RESPONSIVE FOOTER
+   ============================================ */
+
+@media (max-width: 768px) {
+    .main-footer {
+        text-align: center;
+    }
+
+    .main-footer .row > div {
+        margin-bottom: 1rem;
+    }
+
+    .main-footer .row > div:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* ============================================
+   TOUCH ENHANCEMENTS FOR MOBILE
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .btn-icon {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .hover-lift:hover,
+    .hover-scale:hover,
+    .hover-grow:hover,
+    .card:hover {
+        transform: none;
+    }
+
+    /* Make clickable areas larger */
+    .menu-link,
+    .submenu-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    .table tbody tr {
+        cursor: pointer;
+    }
+
+    /* Prevent text selection on buttons */
+    .btn,
+    .menu-link,
+    .action-btn {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+/* ============================================
+   LANDSCAPE ORIENTATION
+   ============================================ */
+
+@media (max-width: 991px) and (orientation: landscape) {
+    .modern-sidebar {
+        width: 240px;
+    }
+
+    .sidebar-brand {
+        padding: 1rem;
+    }
+
+    .brand-logo {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 0.5rem;
+    }
+
+    .brand-name {
+        font-size: 1.125rem;
+    }
+
+    .brand-tagline {
+        font-size: 0.6875rem;
+    }
+
+    .menu-link {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .modern-sidebar,
+    .modern-header,
+    .sidebar-overlay,
+    .main-footer,
+    .btn-fab,
+    .action-buttons,
+    .filter-section,
+    .pagination {
+        display: none !important;
+    }
+
+    .page-content {
+        margin-left: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .table {
+        border: 1px solid #ddd;
+    }
+
+    .table thead th {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+    }
+
+    a[href]:after {
+        content: none !important;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus indicators for keyboard navigation */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    z-index: 10000;
+}
+
+.skip-to-content:focus {
+    top: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card,
+    .table,
+    .form-control {
+        border-width: 2px;
+    }
+
+    .btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    body.auto-theme {
+        --bg-color: #12181f;
+        --bg-light: #1a2027;
+        --bg-secondary: #2d3748;
+        --bg-tertiary: #374151;
+        --text-color: #e2e8f0;
+        --text-color-light: #94a3b8;
+        --heading-color: #f1f5f9;
+        --border-color: #374151;
+    }
+}
+
+/* ============================================
+   RESPONSIVE FONT SIZES
+   ============================================ */
+
+html {
+    font-size: 16px;
+}
+
+@media (max-width: 1200px) {
+    html {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.5rem; }
+    h4 { font-size: 1.25rem; }
+    h5 { font-size: 1.125rem; }
+    h6 { font-size: 1rem; }
+}
+
+@media (max-width: 576px) {
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+}
+
+/* ============================================
+   RESPONSIVE SPACING
+   ============================================ */
+
+@media (max-width: 768px) {
+    .mb-4, .my-4 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    .mt-4, .my-4 {
+        margin-top: 1.5rem !important;
+    }
+
+    .mb-5, .my-5 {
+        margin-bottom: 2rem !important;
+    }
+
+    .mt-5, .my-5 {
+        margin-top: 2rem !important;
+    }
+
+    .p-4 {
+        padding: 1.25rem !important;
+    }
+
+    .p-5 {
+        padding: 1.5rem !important;
+    }
+}
