@@ -94,7 +94,7 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
         </div>
 
         <div class="table-responsive">
-            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <table id="equipment-table" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -104,17 +104,17 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
                         <th>Location</th>
                         <th>Status</th>
                         <th>Next Maintenance</th>
-                        <th>Actions</th>
+                        <th data-sortable="false" data-exportable="false">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while ($row = $equipment_list->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo $row['id']; ?></td>
-                            <td><?php echo $row['name']; ?></td>
-                            <td><?php echo $row['category']; ?></td>
+                            <td><?php echo htmlspecialchars($row['name']); ?></td>
+                            <td><?php echo htmlspecialchars($row['category']); ?></td>
                             <td><?php echo $row['quantity']; ?></td>
-                            <td><?php echo $row['location']; ?></td>
+                            <td><?php echo htmlspecialchars($row['location']); ?></td>
                             <td>
                                 <span class="badge bg-<?php
                                     echo $row['status'] == 'available' ? 'success' :
@@ -125,25 +125,13 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
                                 </span>
                             </td>
                             <td><?php echo $row['next_maintenance'] ? date('M d, Y', strtotime($row['next_maintenance'])) : 'N/A'; ?></td>
-                            <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                            <td class="actions">
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -280,26 +268,20 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <!-- DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
     <script>
-        $(document).ready(function() {
-            $('#datatables').DataTable({
-                "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
-                }
-            });
-
-            var table = $('#datatables').DataTable();
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.getElementById('equipment-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'GMS_Equipment_Export',
+                    }
+                });
+            }
         });
 
         // Show modal if editing
@@ -309,99 +291,6 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
                 modal.show();
             });
         <?php endif; ?>
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('datatables');
-            const wb = XLSX.utils.book_new();
-
-            // Clone table and remove Actions column
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (lastCell) lastCell.remove();
-            });
-
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-
-            // Set column widths
-            ws['!cols'] = [
-                {wch: 5},  // ID
-                {wch: 20}, // Name
-                {wch: 15}, // Category
-                {wch: 10}, // Quantity
-                {wch: 15}, // Location
-                {wch: 12}, // Status
-                {wch: 15}  // Next Maintenance
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Equipment');
-            XLSX.writeFile(wb, 'Equipment_' + new Date().toISOString().slice(0,10) + '.xlsx');
-        }
-
-        // Export to PDF
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
-
-            // Add title
-            doc.setFontSize(18);
-            doc.text('Equipment List', 14, 15);
-
-            // Add date
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
-
-            // Get table data
-            const table = document.getElementById('datatables');
-            const rows = [];
-            const headers = [];
-
-            // Get headers (exclude Actions column)
-            const headerCells = table.querySelectorAll('thead th');
-            headerCells.forEach((cell, index) => {
-                if (index < headerCells.length - 1) { // Skip last column (Actions)
-                    headers.push(cell.textContent.trim());
-                }
-            });
-
-            // Get rows (exclude Actions column)
-            const bodyRows = table.querySelectorAll('tbody tr');
-            bodyRows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) { // Skip last column (Actions)
-                        rowData.push(cell.textContent.trim());
-                    }
-                });
-                rows.push(rowData);
-            });
-
-            // Add table
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: 28,
-                theme: 'grid',
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2
-                },
-                headStyles: {
-                    fillColor: [102, 126, 234],
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 247, 250]
-                }
-            });
-
-            doc.save('Equipment_' + new Date().toISOString().slice(0,10) + '.pdf');
-        }
     </script>
-       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>
