@@ -82,7 +82,7 @@ $suppliers = $conn->query("SELECT * FROM suppliers ORDER BY name");
         </div>
 
         <div class="table-responsive">
-            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <table id="suppliers-table" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -90,7 +90,7 @@ $suppliers = $conn->query("SELECT * FROM suppliers ORDER BY name");
                         <th>Contact Person</th>
                         <th>Phone</th>
                         <th>Email</th>
-                        <th>Actions</th>
+                        <th data-sortable="false" data-exportable="false">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -186,36 +186,41 @@ $suppliers = $conn->query("SELECT * FROM suppliers ORDER BY name");
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Include libraries for export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="../assets/js/enhanced.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('#datatables').DataTable({
-                "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTable
+            const suppliersTable = new DataTable('suppliers-table', {
+                search: true,
+                pagination: true,
+                sortable: true,
+                exportable: true,
+                exportOptions: {
+                    excel: {
+                        filename: 'Suppliers_' + new Date().toISOString().slice(0,10) + '.xlsx',
+                        sheetName: 'Suppliers'
+                    },
+                    pdf: {
+                        filename: 'Suppliers_' + new Date().toISOString().slice(0,10) + '.pdf',
+                        title: 'Supplier Management'
+                    },
+                    csv: {
+                        filename: 'Suppliers_' + new Date().toISOString().slice(0,10) + '.csv'
+                    }
                 }
             });
 
-            var table = $('#datatables').DataTable();
-        });
-
-        // Show modal if editing
-        <?php if ($supplier): ?>
-            document.addEventListener('DOMContentLoaded', function() {
+            // Show modal if editing
+            <?php if ($supplier): ?>
                 var modal = new bootstrap.Modal(document.getElementById('supplierModal'));
                 modal.show();
-            });
-        <?php endif; ?>
+            <?php endif; ?>
+        });
     </script>
 </body>
 </html>

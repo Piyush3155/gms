@@ -98,9 +98,6 @@ $total_expiring = $critical_count + $warning_count;
                 <button class="btn btn-success" onclick="sendBulkEmails()">
                     <i class="fas fa-paper-plane me-1"></i>Send All Emails
                 </button>
-                <button class="btn btn-info" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-1"></i>Export
-                </button>
             </div>
         </div>
 
@@ -142,10 +139,10 @@ $total_expiring = $critical_count + $warning_count;
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+                    <table id="expiry-emails-table" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
                         <thead class="table-dark">
                             <tr>
-                                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                <th data-sortable="false" data-exportable="false"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Contact</th>
@@ -153,7 +150,7 @@ $total_expiring = $critical_count + $warning_count;
                                 <th>Expiry Date</th>
                                 <th>Days Remaining</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th data-sortable="false" data-exportable="false">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -206,125 +203,34 @@ $total_expiring = $critical_count + $warning_count;
         </div>
     </div>
 
-    <script>
-        function changeAlertDays(days) {
-            window.location.href = `send_expiry_emails.php?days=${days}`;
-        }
-
-        function toggleSelectAll() {
-            const selectAll = document.getElementById('selectAll');
-            const checkboxes = document.querySelectorAll('.member-checkbox');
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-        }
-
-        function sendSingleEmail(memberId, email, name, expiryDate, daysRemaining) {
-            if (confirm(`Send expiry email to ${name} (${email})?`)) {
-                fetch('send_expiry_email.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        member_id: memberId,
-                        email: email,
-                        name: name,
-                        expiry_date: expiryDate,
-                        days_remaining: daysRemaining
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Email sent successfully!');
-                    } else {
-                        alert('Failed to send email: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    alert('Error sending email: ' + error.message);
-                });
-            }
-        }
-
-        function sendBulkEmails() {
-            const selectedCheckboxes = document.querySelectorAll('.member-checkbox:checked');
-            if (selectedCheckboxes.length === 0) {
-                alert('Please select members to send emails to.');
-                return;
-            }
-
-            if (!confirm(`Send expiry emails to ${selectedCheckboxes.length} selected members?`)) {
-                return;
-            }
-
-            const memberIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-            fetch('send_bulk_expiry_emails.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    member_ids: memberIds
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`Emails sent successfully! ${data.sent_count} emails sent.`);
-                } else {
-                    alert('Failed to send emails: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Error sending emails: ' + error.message);
-            });
-        }
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('expiryTable');
-            const wb = XLSX.utils.book_new();
-
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const firstCell = row.querySelector('th:first-child, td:first-child');
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (firstCell) firstCell.remove();
-                if (lastCell) lastCell.remove();
-            });
-
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-            ws['!cols'] = [{wch: 20}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 10}];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Expiry_Emails');
-            XLSX.writeFile(wb, 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.xlsx');
-        }
-    </script>
-
     <!-- Include libraries for export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="../assets/js/enhanced.js"></script>
+
     <script>
-        $(document).ready(function() {
-            $('#datatables').DataTable({
-                "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTable
+            const expiryEmailsTable = new DataTable('expiry-emails-table', {
+                search: true,
+                pagination: true,
+                sortable: true,
+                exportable: true,
+                exportOptions: {
+                    excel: {
+                        filename: 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.xlsx',
+                        sheetName: 'Expiry_Emails'
+                    },
+                    pdf: {
+                        filename: 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.pdf',
+                        title: 'Membership Expiry Emails'
+                    },
+                    csv: {
+                        filename: 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.csv'
+                    }
                 }
             });
-
-            var table = $('#datatables').DataTable();
         });
 
         function changeAlertDays(days) {
@@ -399,27 +305,6 @@ $total_expiring = $critical_count + $warning_count;
             .catch(error => {
                 alert('Error sending emails: ' + error.message);
             });
-        }
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('datatables');
-            const wb = XLSX.utils.book_new();
-
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const firstCell = row.querySelector('th:first-child, td:first-child');
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (firstCell) firstCell.remove();
-                if (lastCell) lastCell.remove();
-            });
-
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-            ws['!cols'] = [{wch: 20}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 15}, {wch: 12}, {wch: 10}];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Expiry_Emails');
-            XLSX.writeFile(wb, 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.xlsx');
         }
     </script>
         </div>

@@ -82,12 +82,6 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Member Progress Tracking</h2>
             <div>
-                <button class="btn btn-success me-2" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-2"></i>Export to Excel
-                </button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF()">
-                    <i class="fas fa-file-pdf me-2"></i>Export to PDF
-                </button>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#progressModal">
                     <i class="fas fa-plus me-2"></i>Add Progress Record
                 </button>
@@ -95,7 +89,7 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
         </div>
 
         <div class="table-responsive">
-            <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <table id="member-progress-table" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -107,7 +101,7 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
                         <th>Hips (cm)</th>
                         <th>Biceps (cm)</th>
                         <th>Notes</th>
-                        <th>Actions</th>
+                        <th data-sortable="false" data-exportable="false">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -262,130 +256,37 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="../assets/js/enhanced.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('#datatables').DataTable({
-                "pagingType": "full_numbers",
-                "lengthMenu": [
-                    [10, 25, 50, -1],
-                    [10, 25, 50, "All"]
-                ],
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records",
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTable
+            const memberProgressTable = new DataTable('member-progress-table', {
+                search: true,
+                pagination: true,
+                sortable: true,
+                exportable: true,
+                exportOptions: {
+                    excel: {
+                        filename: 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.xlsx',
+                        sheetName: 'Member_Progress'
+                    },
+                    pdf: {
+                        filename: 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.pdf',
+                        title: 'Member Progress Records'
+                    },
+                    csv: {
+                        filename: 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.csv'
+                    }
                 }
             });
 
-            var table = $('#datatables').DataTable();
-        });
-
-        // Show modal if editing
-        <?php if ($progress): ?>
-            document.addEventListener('DOMContentLoaded', function() {
+            // Show modal if editing
+            <?php if ($progress): ?>
                 var modal = new bootstrap.Modal(document.getElementById('progressModal'));
                 modal.show();
-            });
-        <?php endif; ?>
-
-        // Export to Excel
-        function exportToExcel() {
-            const table = document.getElementById('datatables');
-            const wb = XLSX.utils.book_new();
-
-            // Clone table and remove Actions column
-            const clonedTable = table.cloneNode(true);
-            const rows = clonedTable.querySelectorAll('tr');
-            rows.forEach(row => {
-                const lastCell = row.querySelector('th:last-child, td:last-child');
-                if (lastCell) lastCell.remove();
-            });
-
-            const ws = XLSX.utils.table_to_sheet(clonedTable);
-
-            // Set column widths
-            ws['!cols'] = [
-                {wch: 5},  // ID
-                {wch: 20}, // Member
-                {wch: 12}, // Date
-                {wch: 10}, // Weight
-                {wch: 10}, // Chest
-                {wch: 10}, // Waist
-                {wch: 10}, // Hips
-                {wch: 10}, // Biceps
-                {wch: 30}  // Notes
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, 'Member_Progress');
-            XLSX.writeFile(wb, 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.xlsx');
-        }
-
-        // Export to PDF
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // landscape orientation
-
-            // Add title
-            doc.setFontSize(18);
-            doc.text('Member Progress Records', 14, 15);
-
-            // Add date
-            doc.setFontSize(10);
-            doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
-
-            // Get table data
-            const table = document.getElementById('datatables');
-            const rows = [];
-            const headers = [];
-
-            // Get headers (exclude Actions column)
-            const headerCells = table.querySelectorAll('thead th');
-            headerCells.forEach((cell, index) => {
-                if (index < headerCells.length - 1) { // Skip last column (Actions)
-                    headers.push(cell.textContent.trim());
-                }
-            });
-
-            // Get rows (exclude Actions column)
-            const bodyRows = table.querySelectorAll('tbody tr');
-            bodyRows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) { // Skip last column (Actions)
-                        rowData.push(cell.textContent.trim());
-                    }
-                });
-                rows.push(rowData);
-            });
-
-            // Add table
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: 28,
-                theme: 'grid',
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2
-                },
-                headStyles: {
-                    fillColor: [102, 126, 234],
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 247, 250]
-                }
-            });
-
-            doc.save('Member_Progress_' + new Date().toISOString().slice(0,10) + '.pdf');
-        }
+            <?php endif; ?>
+        });
     </script>
        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
