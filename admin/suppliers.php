@@ -102,8 +102,8 @@ $suppliers = $conn->query("SELECT * FROM suppliers ORDER BY name");
                             <td><?php echo $row['phone']; ?></td>
                             <td><?php echo $row['email']; ?></td>
                             <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -194,26 +194,18 @@ $suppliers = $conn->query("SELECT * FROM suppliers ORDER BY name");
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const suppliersTable = new DataTable('suppliers-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Suppliers_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Suppliers'
-                    },
-                    pdf: {
-                        filename: 'Suppliers_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Supplier Management'
-                    },
-                    csv: {
-                        filename: 'Suppliers_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('suppliers-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Suppliers'
                     }
-                }
-            });
+                });
+            }
 
             // Show modal if editing
             <?php if ($supplier): ?>

@@ -134,26 +134,18 @@ $feedback = $conn->query("SELECT f.*, u.name as user_name FROM feedback f JOIN u
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const feedbackTable = new DataTable('feedback-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Feedback_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Feedback'
-                    },
-                    pdf: {
-                        filename: 'Feedback_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Feedback & Complaint Management'
-                    },
-                    csv: {
-                        filename: 'Feedback_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('feedback-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Feedback'
                     }
-                }
-            });
+                });
+            }
         });
 
         function respondToFeedback(id, subject, message, response) {
