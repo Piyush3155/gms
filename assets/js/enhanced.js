@@ -54,7 +54,13 @@
 
 class DataTable {
     constructor(tableElement, options = {}) {
-        this.table = tableElement;
+        // Handle both ID string and DOM element
+        if (typeof tableElement === 'string') {
+            this.table = document.getElementById(tableElement);
+        } else {
+            this.table = tableElement;
+        }
+        
         if (!this.table) {
             console.error("DataTable: Provided table element is invalid.");
             return;
@@ -86,30 +92,34 @@ class DataTable {
         console.log('[DataTable] Table element:', this.table);
         console.log('[DataTable] Table parent:', this.table.parentNode);
         
-        // Create wrapper
+        // 1. Create wrapper
         this.wrapper = document.createElement('div');
         this.wrapper.className = 'data-table-wrapper';
+        console.log('[DataTable] Wrapper created');
         
-        // Insert wrapper before table
+        // 2. Insert wrapper into DOM (before table)
         this.table.parentNode.insertBefore(this.wrapper, this.table);
-        console.log('[DataTable] Wrapper created and inserted');
-
-        // Move table into wrapper FIRST
+        console.log('[DataTable] Wrapper inserted into DOM');
+        
+        // 3. Move table INTO wrapper ← This is critical
         this.wrapper.appendChild(this.table);
-        console.log('[DataTable] Table appended to wrapper');
-
-        // Now create header and footer (table is now inside wrapper)
+        console.log('[DataTable] Table moved into wrapper');
+        
+        // 4. Create header (now table is inside wrapper, so insertBefore works)
         this.createHeader();
         console.log('[DataTable] Header created');
-
+        
+        // 5. Initialize sorting if enabled
         if (this.options.sortable) {
             this.initSorting();
             console.log('[DataTable] Sorting initialized');
         }
-
+        
+        // 6. Create footer
         this.createFooter();
         console.log('[DataTable] Footer created');
         
+        // 7. Render initial state
         this.render();
         console.log('[DataTable] Initial render complete');
     }

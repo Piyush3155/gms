@@ -193,26 +193,18 @@ $users = $conn->query("SELECT u.id, u.name, t.salary FROM users u LEFT JOIN trai
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const payrollTable = new DataTable('payroll-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Payroll_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Payroll'
-                    },
-                    pdf: {
-                        filename: 'Payroll_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Payroll Management'
-                    },
-                    csv: {
-                        filename: 'Payroll_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('payroll-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Payroll'
                     }
-                }
-            });
+                });
+            }
         });
 
         function exportSlip(payrollId) {

@@ -133,9 +133,9 @@ $trainers = $conn->query("SELECT id, name FROM trainers ORDER BY name");
                                 </span>
                             </td>
                             <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="view_class_bookings.php?class_id=<?php echo $row['id']; ?>" class="btn btn-sm btn-info" title="View Bookings"><i class="bi bi-people"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="view_class_bookings.php?class_id=<?php echo $row['id']; ?>" class="btn-icon" title="View Bookings"><i class="bi bi-people"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -271,26 +271,18 @@ $trainers = $conn->query("SELECT id, name FROM trainers ORDER BY name");
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const groupClassesTable = new DataTable('group-classes-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Group_Classes_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Group_Classes'
-                    },
-                    pdf: {
-                        filename: 'Group_Classes_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Group Classes Schedule'
-                    },
-                    csv: {
-                        filename: 'Group_Classes_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('group-classes-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Group_Classes'
                     }
-                }
-            });
+                });
+            }
 
             // Show modal if editing
             <?php if ($class): ?>

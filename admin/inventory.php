@@ -116,8 +116,8 @@ $suppliers = $conn->query("SELECT id, name FROM suppliers ORDER BY name");
                             <td><?php echo $row['supplier_name'] ?? 'N/A'; ?></td>
                             <td><?php echo $row['expiry_date'] ? date('M d, Y', strtotime($row['expiry_date'])) : 'N/A'; ?></td>
                             <td>
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -239,26 +239,18 @@ $suppliers = $conn->query("SELECT id, name FROM suppliers ORDER BY name");
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const inventoryTable = new DataTable('inventory-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Inventory_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Inventory'
-                    },
-                    pdf: {
-                        filename: 'Inventory_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Inventory Management'
-                    },
-                    csv: {
-                        filename: 'Inventory_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('inventory-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Inventory'
                     }
-                }
-            });
+                });
+            }
 
             // Show modal if editing
             <?php if ($item): ?>

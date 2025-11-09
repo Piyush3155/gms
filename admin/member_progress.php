@@ -117,8 +117,8 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
                             <td><?php echo $row['biceps'] ? $row['biceps'] . ' cm' : '-'; ?></td>
                             <td><?php echo $row['notes'] ? substr($row['notes'], 0, 50) . (strlen($row['notes']) > 50 ? '...' : '') : '-'; ?></td>
                             <td class="d-flex gap-2">
-                                <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
+                                <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -260,26 +260,18 @@ $members = $conn->query("SELECT id, name FROM members ORDER BY name");
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const memberProgressTable = new DataTable('member-progress-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Member_Progress'
-                    },
-                    pdf: {
-                        filename: 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Member Progress Records'
-                    },
-                    csv: {
-                        filename: 'Member_Progress_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('member-progress-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Member_Progress'
                     }
-                }
-            });
+                });
+            }
 
             // Show modal if editing
             <?php if ($progress): ?>

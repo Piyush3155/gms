@@ -211,26 +211,18 @@ $total_expiring = $critical_count + $warning_count;
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const expiryEmailsTable = new DataTable('expiry-emails-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Expiry_Emails'
-                    },
-                    pdf: {
-                        filename: 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Membership Expiry Emails'
-                    },
-                    csv: {
-                        filename: 'Membership_Expiry_Emails_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('expiry-emails-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Membership_Expiry_Emails'
                     }
-                }
-            });
+                });
+            }
         });
 
         function changeAlertDays(days) {

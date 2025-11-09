@@ -113,7 +113,7 @@ $inventory = $conn->query("SELECT id, name, unit_price FROM inventory WHERE quan
                             <td><?php echo date('M d, Y', strtotime($row['sale_date'])); ?></td>
                             <td><?php echo ucfirst($row['payment_method']); ?></td>
                             <td>
-                                <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure? This will restore inventory.')"><i class="bi bi-trash"></i></a>
+                                <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon" title="Delete" onclick="return confirm('Are you sure? This will restore inventory.')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -226,26 +226,18 @@ $inventory = $conn->query("SELECT id, name, unit_price FROM inventory WHERE quan
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable
-            const salesTable = new DataTable('sales-table', {
-                search: true,
-                pagination: true,
-                sortable: true,
-                exportable: true,
-                exportOptions: {
-                    excel: {
-                        filename: 'Sales_' + new Date().toISOString().slice(0,10) + '.xlsx',
-                        sheetName: 'Sales'
-                    },
-                    pdf: {
-                        filename: 'Sales_' + new Date().toISOString().slice(0,10) + '.pdf',
-                        title: 'Sales Management'
-                    },
-                    csv: {
-                        filename: 'Sales_' + new Date().toISOString().slice(0,10) + '.csv'
+            const table = document.getElementById('sales-table');
+            if (table) {
+                new DataTable(table, {
+                    searchable: true,
+                    pagination: true,
+                    sortable: true,
+                    exportable: true,
+                    exportOptions: {
+                        fileName: 'Sales'
                     }
-                }
-            });
+                });
+            }
         });
 
         function updatePrice() {
