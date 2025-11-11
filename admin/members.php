@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $new_member_id = $conn->insert_id;
                 
                 // Generate QR code
-                $qr_code = 'GMS_MEMBER_' . $new_member_id . '_' . md5($new_member_id . $email);
+                $qr_code = 'GMS-M-' . str_pad($new_member_id, 3, '0', STR_PAD_LEFT);
                 $update_stmt = $conn->prepare("UPDATE members SET qr_code = ? WHERE id = ?");
                 $update_stmt->bind_param("si", $qr_code, $new_member_id);
                 $update_stmt->execute();
@@ -147,7 +147,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
 
 <!-- Member Statistics Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-4 col-sm-6">
         <div class="info-card fade-in" style="animation-delay: 0.1s;">
             <div class="info-card-top">
                 <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
@@ -160,7 +160,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
             </div>
         </div>
     </div>
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-4 col-sm-6">
         <div class="info-card fade-in" style="animation-delay: 0.2s;">
             <div class="info-card-top">
                 <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
@@ -173,7 +173,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
             </div>
         </div>
     </div>
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-4 col-sm-66">
         <div class="info-card fade-in" style="animation-delay: 0.3s;">
             <div class="info-card-top">
                 <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
@@ -186,7 +186,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
             </div>
         </div>
     </div>
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-4 col-sm-66">
         <div class="info-card fade-in" style="animation-delay: 0.4s;">
             <div class="info-card-top">
                 <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
@@ -199,7 +199,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
             </div>
         </div>
     </div>
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-4 col-sm-66">
         <div class="info-card fade-in" style="animation-delay: 0.5s;">
             <div class="info-card-top">
                 <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
@@ -212,7 +212,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
             </div>
         </div>
     </div>
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+    <div class="col-md-4 col-sm-66">
         <div class="info-card fade-in" style="animation-delay: 0.6s;">
             <div class="info-card-top">
                 <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
@@ -257,6 +257,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                                 <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
                                 <a href="renew_membership.php?member_id=<?php echo $row['id']; ?>" class="btn-icon" title="Renew Membership"><i class="bi bi-arrow-clockwise"></i></a>
                                 <a href="generate_admission_receipt.php?member_id=<?php echo $row['id']; ?>" class="btn-icon" title="Receipt" target="_blank"><i class="bi bi-receipt"></i></a>
+                                <a href="qr_scanner.php?generate_qr_download=1&member_id=<?php echo $row['id']; ?>" class="btn-icon" title="Download QR Code"><i class="bi bi-qr-code"></i></a>
                                 <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon btn-delete" title="Delete" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>

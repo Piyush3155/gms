@@ -113,8 +113,8 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
         </div>
 
         <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="row mb-4 ">
+            <div class="col-md-4 col-sm-6 ">
                 <div class="info-card fade-in" style="animation-delay: 0.1s;">
                     <div class="info-card-top">
                         <div class="info-card-icon">
@@ -127,7 +127,7 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
                     </div>
                 </div>
             </div>
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.2s;">
                     <div class="info-card-top">
                         <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
@@ -140,7 +140,7 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
                     </div>
                 </div>
             </div>
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.3s;">
                     <div class="info-card-top">
                         <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
@@ -153,7 +153,7 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
                     </div>
                 </div>
             </div>
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.4s;">
                     <div class="info-card-top">
                         <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
@@ -166,7 +166,7 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
                     </div>
                 </div>
             </div>
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.5s;">
                     <div class="info-card-top">
                         <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
@@ -179,7 +179,7 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
                     </div>
                 </div>
             </div>
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.6s;">
                     <div class="info-card-top">
                         <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
@@ -192,7 +192,7 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
                     </div>
                 </div>
             </div>
-            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.7s;">
                     <div class="info-card-top">
                         <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
