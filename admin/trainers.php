@@ -4,8 +4,13 @@ require_role('admin');
 
 // Handle delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $conn->query("DELETE FROM trainers WHERE id = $id");
+    $id = intval($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM trainers WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+        log_activity("Deleted trainer", "trainers", "Trainer ID: $id");
+    }
+    $stmt->close();
     redirect('trainers.php?msg=6');
 }
 
@@ -14,35 +19,44 @@ $errors = [];
 $trainer = null;
 
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
-    $id = $_GET['edit'];
-    $result = $conn->query("SELECT * FROM trainers WHERE id = $id");
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM trainers WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $trainer = $result->fetch_assoc();
+    $stmt->close();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = sanitize($_POST['name']);
-    $specialization = sanitize($_POST['specialization']);
-    $contact = sanitize($_POST['contact']);
-    $email = sanitize($_POST['email']);
-    $experience = sanitize($_POST['experience']);
-    $salary = sanitize($_POST['salary']);
-    $join_date = sanitize($_POST['join_date']);
+    $name = trim($_POST['name']);
+    $specialization = trim($_POST['specialization']);
+    $contact = trim($_POST['contact']);
+    $email = trim($_POST['email']);
+    $experience = !empty($_POST['experience']) ? intval($_POST['experience']) : 0;
+    $salary = !empty($_POST['salary']) ? floatval($_POST['salary']) : 0.00;
+    $join_date = trim($_POST['join_date']);
 
     if (empty($name) || empty($email)) {
         $errors[] = "Name and email are required.";
+    } elseif (!validate_email($email)) {
+        $errors[] = "Invalid email format.";
     } else {
         if ($trainer) {
             // Update
             $stmt = $conn->prepare("UPDATE trainers SET name=?, specialization=?, contact=?, email=?, experience=?, salary=?, join_date=? WHERE id=?");
-            $stmt->bind_param("sssssdsi", $name, $specialization, $contact, $email, $experience, $salary, $join_date, $trainer['id']);
+            $stmt->bind_param("sssisdsi", $name, $specialization, $contact, $email, $experience, $salary, $join_date, $trainer['id']);
         } else {
             // Insert
             $stmt = $conn->prepare("INSERT INTO trainers (name, specialization, contact, email, experience, salary, join_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssds", $name, $specialization, $contact, $email, $experience, $salary, $join_date);
+            $stmt->bind_param("sssisds", $name, $specialization, $contact, $email, $experience, $salary, $join_date);
         }
 
         if ($stmt->execute()) {
             $msg = $trainer ? '5' : '4';
+            $action = $trainer ? "Updated trainer" : "Added new trainer";
+            $trainer_id = $trainer ? $trainer['id'] : $conn->insert_id;
+            log_activity($action, "trainers", "Trainer ID: $trainer_id, Name: $name");
             redirect('trainers.php?msg=' . $msg);
         } else {
             $errors[] = "Error saving trainer.";
@@ -78,8 +92,12 @@ $trainer_stats['avg_members_per_trainer'] = round($result->fetch_assoc()['avg_me
 
 // Today's training sessions (attendance records for trainers)
 $today = date('Y-m-d');
-$result = $conn->query("SELECT COUNT(DISTINCT m.trainer_id) as active_trainers FROM attendance a JOIN members m ON a.user_id = m.id WHERE a.date = '$today' AND a.status = 'present'");
+$stmt = $conn->prepare("SELECT COUNT(DISTINCT m.trainer_id) as active_trainers FROM attendance a JOIN members m ON a.user_id = m.id WHERE a.date = ? AND a.status = 'present'");
+$stmt->bind_param("s", $today);
+$stmt->execute();
+$result = $stmt->get_result();
 $trainer_stats['todays_active_trainers'] = $result->fetch_assoc()['active_trainers'];
+$stmt->close();
 
 // Most experienced trainer
 $result = $conn->query("SELECT MAX(experience) as max_experience FROM trainers");

@@ -4,8 +4,13 @@ require_role('admin');
 
 // Handle delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $conn->query("DELETE FROM plans WHERE id = $id");
+    $id = intval($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM plans WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+        log_activity("Deleted plan", "plans", "Plan ID: $id");
+    }
+    $stmt->close();
     redirect('plans.php?msg=9');
 }
 
@@ -14,16 +19,20 @@ $errors = [];
 $plan = null;
 
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
-    $id = $_GET['edit'];
-    $result = $conn->query("SELECT * FROM plans WHERE id = $id");
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM plans WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $plan = $result->fetch_assoc();
+    $stmt->close();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = sanitize($_POST['name']);
-    $duration_months = sanitize($_POST['duration_months']);
-    $amount = sanitize($_POST['amount']);
-    $description = sanitize($_POST['description']);
+    $name = trim($_POST['name']);
+    $duration_months = !empty($_POST['duration_months']) ? intval($_POST['duration_months']) : 1;
+    $amount = !empty($_POST['amount']) ? floatval($_POST['amount']) : 0.00;
+    $description = trim($_POST['description']);
 
     if (empty($name) || empty($amount)) {
         $errors[] = "Name and amount are required.";
@@ -31,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($plan) {
             // Update
             $stmt = $conn->prepare("UPDATE plans SET name=?, duration_months=?, amount=?, description=? WHERE id=?");
-            $stmt->bind_param("sidssi", $name, $duration_months, $amount, $description, $plan['id']);
+            $stmt->bind_param("sidsi", $name, $duration_months, $amount, $description, $plan['id']);
         } else {
             // Insert
             $stmt = $conn->prepare("INSERT INTO plans (name, duration_months, amount, description) VALUES (?, ?, ?, ?)");
@@ -40,6 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->execute()) {
             $msg = $plan ? '8' : '7';
+            $action = $plan ? "Updated plan" : "Added new plan";
+            $plan_id = $plan ? $plan['id'] : $conn->insert_id;
+            log_activity($action, "plans", "Plan ID: $plan_id, Name: $name");
             redirect('plans.php?msg=' . $msg);
         } else {
             $errors[] = "Error saving plan.";
@@ -67,8 +79,12 @@ $plan_stats['popular_plan_count'] = $popular_plan['member_count'] ?? 0;
 
 // Revenue by plans (this month)
 $current_month = date('Y-m');
-$result = $conn->query("SELECT SUM(p.amount) as total FROM payments pay JOIN plans p ON pay.plan_id = p.id WHERE pay.status = 'paid' AND DATE_FORMAT(pay.payment_date, '%Y-%m') = '$current_month'");
+$stmt = $conn->prepare("SELECT SUM(p.amount) as total FROM payments pay JOIN plans p ON pay.plan_id = p.id WHERE pay.status = 'paid' AND DATE_FORMAT(pay.payment_date, '%Y-%m') = ?");
+$stmt->bind_param("s", $current_month);
+$stmt->execute();
+$result = $stmt->get_result();
 $plan_stats['monthly_plan_revenue'] = $result->fetch_assoc()['total'] ?? 0;
+$stmt->close();
 
 // Average plan price
 $result = $conn->query("SELECT AVG(amount) as avg_price FROM plans");

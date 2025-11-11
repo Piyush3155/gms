@@ -4,48 +4,65 @@ require_role('admin');
 
 // Handle attendance marking
 if (isset($_POST['mark_attendance'])) {
-    $user_id = sanitize($_POST['user_id']);
-    $role = sanitize($_POST['role']);
-    $date = sanitize($_POST['date']);
-    $check_in = !empty($_POST['check_in']) ? sanitize($_POST['check_in']) : null;
-    $check_out = !empty($_POST['check_out']) ? sanitize($_POST['check_out']) : null;
-    $status = sanitize($_POST['status']);
+    $date = trim($_POST['date']);
+    $users = $_POST['users'] ?? [];
+    
+    if (!empty($users) && !empty($date)) {
+        foreach ($users as $user_id => $data) {
+            $user_id = intval($user_id);
+            $role = trim($data['role']);
+            $status = trim($data['status']);
+            $check_in = !empty($data['check_in']) ? trim($data['check_in']) : null;
+            $check_out = !empty($data['check_out']) ? trim($data['check_out']) : null;
 
-    // Check if attendance already exists
-    $stmt = $conn->prepare("SELECT id FROM attendance WHERE user_id = ? AND date = ?");
-    $stmt->bind_param("is", $user_id, $date);
-    $stmt->execute();
-    $result = $stmt->get_result();
+            // Check if attendance already exists
+            $stmt = $conn->prepare("SELECT id FROM attendance WHERE user_id = ? AND date = ?");
+            $stmt->bind_param("is", $user_id, $date);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        // Update existing
-        $stmt = $conn->prepare("UPDATE attendance SET check_in=?, check_out=?, status=? WHERE user_id=? AND date=?");
-        $stmt->bind_param("sssis", $check_in, $check_out, $status, $user_id, $date);
-    } else {
-        // Insert new
-        $stmt = $conn->prepare("INSERT INTO attendance (user_id, role, date, check_in, check_out, status) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("isssss", $user_id, $role, $date, $check_in, $check_out, $status);
+            if ($result->num_rows > 0) {
+                // Update existing
+                $stmt = $conn->prepare("UPDATE attendance SET check_in=?, check_out=?, status=? WHERE user_id=? AND date=?");
+                $stmt->bind_param("sssis", $check_in, $check_out, $status, $user_id, $date);
+            } else {
+                // Insert new
+                $stmt = $conn->prepare("INSERT INTO attendance (user_id, role, date, check_in, check_out, status) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("isssss", $user_id, $role, $date, $check_in, $check_out, $status);
+            }
+
+            $stmt->execute();
+            $stmt->close();
+        }
+        
+        log_activity("Updated attendance records", "attendance", "Date: $date");
     }
-
-    $stmt->execute();
-    $stmt->close();
-    header("Location: attendance.php?date=" . $date);
+    
+    header("Location: attendance.php?date=" . urlencode($date));
     exit();
 }
 
 // Get selected date
-$selected_date = $_GET['date'] ?? date('Y-m-d');
+$selected_date = isset($_GET['date']) ? trim($_GET['date']) : date('Y-m-d');
 
 // Get attendance statistics
 $attendance_stats = [];
 
 // Today's stats
 $today = date('Y-m-d');
-$result = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE date = '$today' AND status = 'present'");
+$stmt = $conn->prepare("SELECT COUNT(*) as count FROM attendance WHERE date = ? AND status = 'present'");
+$stmt->bind_param("s", $today);
+$stmt->execute();
+$result = $stmt->get_result();
 $attendance_stats['present_today'] = $result->fetch_assoc()['count'];
+$stmt->close();
 
-$result = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE date = '$today' AND status = 'absent'");
+$stmt = $conn->prepare("SELECT COUNT(*) as count FROM attendance WHERE date = ? AND status = 'absent'");
+$stmt->bind_param("s", $today);
+$stmt->execute();
+$result = $stmt->get_result();
 $attendance_stats['absent_today'] = $result->fetch_assoc()['count'];
+$stmt->close();
 
 // Total expected (all active members)
 $result = $conn->query("SELECT COUNT(*) as count FROM members WHERE status = 'active'");
@@ -57,22 +74,30 @@ $attendance_stats['attendance_rate'] = $attendance_stats['total_expected'] > 0 ?
 
 // Average monthly attendance
 $current_month = date('Y-m');
-$result = $conn->query("SELECT AVG(daily_present) as avg_attendance FROM (
+$stmt = $conn->prepare("SELECT AVG(daily_present) as avg_attendance FROM (
     SELECT COUNT(*) as daily_present 
     FROM attendance 
-    WHERE status = 'present' AND DATE_FORMAT(date, '%Y-%m') = '$current_month'
+    WHERE status = 'present' AND DATE_FORMAT(date, '%Y-%m') = ?
     GROUP BY date
 ) as daily_stats");
+$stmt->bind_param("s", $current_month);
+$stmt->execute();
+$result = $stmt->get_result();
 $attendance_stats['monthly_avg'] = round($result->fetch_assoc()['avg_attendance'] ?? 0, 1);
+$stmt->close();
 
 // Peak attendance day this month
-$result = $conn->query("SELECT MAX(daily_present) as peak FROM (
+$stmt = $conn->prepare("SELECT MAX(daily_present) as peak FROM (
     SELECT COUNT(*) as daily_present 
     FROM attendance 
-    WHERE status = 'present' AND DATE_FORMAT(date, '%Y-%m') = '$current_month'
+    WHERE status = 'present' AND DATE_FORMAT(date, '%Y-%m') = ?
     GROUP BY date
 ) as daily_stats");
+$stmt->bind_param("s", $current_month);
+$stmt->execute();
+$result = $stmt->get_result();
 $attendance_stats['monthly_peak'] = $result->fetch_assoc()['peak'] ?? 0;
+$stmt->close();
 
 // Get all users (members and trainers)
 $users = $conn->query("SELECT id, name, 'member' as role FROM members WHERE status = 'active' UNION SELECT id, name, 'trainer' as role FROM trainers ORDER BY name");

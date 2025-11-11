@@ -4,22 +4,26 @@ require_role('admin');
 
 // Handle payment recording
 if (isset($_POST['record_payment'])) {
-    $member_id = sanitize($_POST['member_id']);
-    $plan_id = sanitize($_POST['plan_id']);
-    $amount = sanitize($_POST['amount']);
-    $payment_date = sanitize($_POST['payment_date']);
-    $method = sanitize($_POST['method']);
+    $member_id = intval($_POST['member_id']);
+    $plan_id = intval($_POST['plan_id']);
+    $amount = floatval($_POST['amount']);
+    $payment_date = trim($_POST['payment_date']);
+    $method = trim($_POST['method']);
     $invoice_no = 'INV-' . date('Ymd') . '-' . rand(1000, 9999);
-    $status = sanitize($_POST['status']);
+    $status = trim($_POST['status']);
 
     $stmt = $conn->prepare("INSERT INTO payments (member_id, plan_id, amount, payment_date, method, invoice_no, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iisssss", $member_id, $plan_id, $amount, $payment_date, $method, $invoice_no, $status);
+    $stmt->bind_param("iidssss", $member_id, $plan_id, $amount, $payment_date, $method, $invoice_no, $status);
 
     if ($stmt->execute()) {
         // Update member status to active if payment is successful
         if ($status == 'paid') {
-            $conn->query("UPDATE members SET status='active' WHERE id=$member_id");
+            $update_stmt = $conn->prepare("UPDATE members SET status='active' WHERE id=?");
+            $update_stmt->bind_param("i", $member_id);
+            $update_stmt->execute();
+            $update_stmt->close();
         }
+        log_activity("Recorded payment", "payments", "Invoice: $invoice_no, Member ID: $member_id, Amount: $amount");
         redirect('payments.php?msg=16');
     } else {
         $errors[] = "Failed to record payment.";
@@ -32,13 +36,21 @@ $payment_stats = [];
 
 // Today's revenue
 $today = date('Y-m-d');
-$result = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE(payment_date) = '$today'");
+$stmt = $conn->prepare("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE(payment_date) = ?");
+$stmt->bind_param("s", $today);
+$stmt->execute();
+$result = $stmt->get_result();
 $payment_stats['todays_revenue'] = $result->fetch_assoc()['total'] ?? 0;
+$stmt->close();
 
 // Monthly revenue
 $current_month = date('Y-m');
-$result = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE_FORMAT(payment_date, '%Y-%m') = '$current_month'");
+$stmt = $conn->prepare("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE_FORMAT(payment_date, '%Y-%m') = ?");
+$stmt->bind_param("s", $current_month);
+$stmt->execute();
+$result = $stmt->get_result();
 $payment_stats['monthly_revenue'] = $result->fetch_assoc()['total'] ?? 0;
+$stmt->close();
 
 // Total payments count
 $result = $conn->query("SELECT COUNT(*) as total FROM payments WHERE status='paid'");

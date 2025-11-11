@@ -4,15 +4,16 @@ require_role('admin');
 
 // Handle expense recording
 if (isset($_POST['record_expense'])) {
-    $category = sanitize($_POST['category']);
-    $amount = sanitize($_POST['amount']);
-    $expense_date = sanitize($_POST['expense_date']);
-    $description = sanitize($_POST['description']);
+    $category = trim($_POST['category']);
+    $amount = floatval($_POST['amount']);
+    $expense_date = trim($_POST['expense_date']);
+    $description = trim($_POST['description']);
 
     $stmt = $conn->prepare("INSERT INTO expenses (category, amount, expense_date, description) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("sdss", $category, $amount, $expense_date, $description);
 
     if ($stmt->execute()) {
+        log_activity("Recorded expense", "expenses", "Category: $category, Amount: $amount");
         redirect('expenses.php?msg=13');
     } else {
         $errors[] = "Failed to record expense.";
@@ -22,8 +23,13 @@ if (isset($_POST['record_expense'])) {
 
 // Handle delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $conn->query("DELETE FROM expenses WHERE id = $id");
+    $id = intval($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM expenses WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+        log_activity("Deleted expense", "expenses", "Expense ID: $id");
+    }
+    $stmt->close();
     redirect('expenses.php?msg=15');
 }
 

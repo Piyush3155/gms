@@ -4,8 +4,13 @@ require_role('admin');
 
 // Handle delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $conn->query("DELETE FROM equipment WHERE id = $id");
+    $id = intval($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM equipment WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+        log_activity("Deleted equipment", "equipment", "Equipment ID: $id");
+    }
+    $stmt->close();
     redirect('equipment.php');
 }
 
@@ -14,23 +19,27 @@ $errors = [];
 $equipment = null;
 
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
-    $id = $_GET['edit'];
-    $result = $conn->query("SELECT * FROM equipment WHERE id = $id");
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM equipment WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $equipment = $result->fetch_assoc();
+    $stmt->close();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = sanitize($_POST['name']);
-    $category = sanitize($_POST['category']);
-    $quantity = sanitize($_POST['quantity']);
-    $purchase_date = sanitize($_POST['purchase_date']);
-    $purchase_cost = sanitize($_POST['purchase_cost']);
-    $location = sanitize($_POST['location']);
-    $status = sanitize($_POST['status']);
-    $description = sanitize($_POST['description']);
-    $maintenance_schedule = sanitize($_POST['maintenance_schedule']);
-    $last_maintenance = sanitize($_POST['last_maintenance']);
-    $next_maintenance = sanitize($_POST['next_maintenance']);
+    $name = trim($_POST['name']);
+    $category = trim($_POST['category']);
+    $quantity = intval($_POST['quantity']);
+    $purchase_date = !empty($_POST['purchase_date']) ? trim($_POST['purchase_date']) : null;
+    $purchase_cost = !empty($_POST['purchase_cost']) ? floatval($_POST['purchase_cost']) : 0.00;
+    $location = trim($_POST['location']);
+    $status = trim($_POST['status']);
+    $description = trim($_POST['description']);
+    $maintenance_schedule = trim($_POST['maintenance_schedule']);
+    $last_maintenance = !empty($_POST['last_maintenance']) ? trim($_POST['last_maintenance']) : null;
+    $next_maintenance = !empty($_POST['next_maintenance']) ? trim($_POST['next_maintenance']) : null;
 
     if (empty($name) || empty($category)) {
         $errors[] = "Name and category are required.";
@@ -38,14 +47,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($equipment) {
             // Update
             $stmt = $conn->prepare("UPDATE equipment SET name=?, category=?, quantity=?, purchase_date=?, purchase_cost=?, location=?, status=?, description=?, maintenance_schedule=?, last_maintenance=?, next_maintenance=? WHERE id=?");
-            $stmt->bind_param("ssissssssssi", $name, $category, $quantity, $purchase_date, $purchase_cost, $location, $status, $description, $maintenance_schedule, $last_maintenance, $next_maintenance, $equipment['id']);
+            $stmt->bind_param("siisdsssssi", $name, $category, $quantity, $purchase_date, $purchase_cost, $location, $status, $description, $maintenance_schedule, $last_maintenance, $next_maintenance, $equipment['id']);
         } else {
             // Insert
             $stmt = $conn->prepare("INSERT INTO equipment (name, category, quantity, purchase_date, purchase_cost, location, status, description, maintenance_schedule, last_maintenance, next_maintenance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssissssssss", $name, $category, $quantity, $purchase_date, $purchase_cost, $location, $status, $description, $maintenance_schedule, $last_maintenance, $next_maintenance);
+            $stmt->bind_param("siidsssssss", $name, $category, $quantity, $purchase_date, $purchase_cost, $location, $status, $description, $maintenance_schedule, $last_maintenance, $next_maintenance);
         }
 
         if ($stmt->execute()) {
+            $action = $equipment ? "Updated equipment" : "Added new equipment";
+            $equipment_id = $equipment ? $equipment['id'] : $conn->insert_id;
+            log_activity($action, "equipment", "Equipment ID: $equipment_id, Name: $name");
             redirect('equipment.php');
         } else {
             $errors[] = "Error saving equipment.";

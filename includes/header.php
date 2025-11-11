@@ -293,8 +293,12 @@ $header_settings = $header_settings_query->fetch_assoc();
 
                             // Expiring memberships
                             $expiry_date = date('Y-m-d', strtotime('+7 days'));
-                            $result = $conn->query("SELECT COUNT(*) as total FROM members WHERE expiry_date <= '$expiry_date' AND status = 'active'");
+                            $stmt = $conn->prepare("SELECT COUNT(*) as total FROM members WHERE expiry_date <= ? AND status = 'active'");
+                            $stmt->bind_param("s", $expiry_date);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
                             $notification_count += $result->fetch_assoc()['total'];
+                            $stmt->close();
 
                             // Pending feedback
                             $result = $conn->query("SELECT COUNT(*) as total FROM feedback WHERE status = 'pending'");

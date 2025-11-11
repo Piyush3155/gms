@@ -4,8 +4,13 @@ require_role('admin');
 
 // Handle delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $conn->query("DELETE FROM members WHERE id = $id");
+    $id = intval($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM members WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+        log_activity("Deleted member", "members", "Member ID: $id");
+    }
+    $stmt->close();
     redirect('members.php?msg=3');
 }
 
@@ -14,23 +19,27 @@ $errors = [];
 $member = null;
 
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
-    $id = $_GET['edit'];
-    $result = $conn->query("SELECT * FROM members WHERE id = $id");
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM members WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $member = $result->fetch_assoc();
+    $stmt->close();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = sanitize($_POST['name']);
-    $gender = sanitize($_POST['gender']);
-    $dob = sanitize($_POST['dob']);
-    $contact = sanitize($_POST['contact']);
-    $email = sanitize($_POST['email']);
-    $address = sanitize($_POST['address']);
-    $join_date = sanitize($_POST['join_date']);
-    $expiry_date = sanitize($_POST['expiry_date']);
-    $plan_id = sanitize($_POST['plan_id']);
-    $trainer_id = sanitize($_POST['trainer_id']);
-    $status = sanitize($_POST['status']);
+    $name = trim($_POST['name']);
+    $gender = trim($_POST['gender']);
+    $dob = trim($_POST['dob']);
+    $contact = trim($_POST['contact']);
+    $email = trim($_POST['email']);
+    $address = trim($_POST['address']);
+    $join_date = trim($_POST['join_date']);
+    $expiry_date = trim($_POST['expiry_date']);
+    $plan_id = !empty($_POST['plan_id']) ? intval($_POST['plan_id']) : null;
+    $trainer_id = !empty($_POST['trainer_id']) ? intval($_POST['trainer_id']) : null;
+    $status = trim($_POST['status']);
 
     if (empty($name) || empty($email)) {
         $errors[] = "Name and email are required.";
@@ -38,11 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($member) {
             // Update
             $stmt = $conn->prepare("UPDATE members SET name=?, gender=?, dob=?, contact=?, email=?, address=?, join_date=?, expiry_date=?, plan_id=?, trainer_id=?, status=? WHERE id=?");
-            $stmt->bind_param("sssssssssssi", $name, $gender, $dob, $contact, $email, $address, $join_date, $expiry_date, $plan_id, $trainer_id, $status, $member['id']);
+            $stmt->bind_param("ssssssssiisi", $name, $gender, $dob, $contact, $email, $address, $join_date, $expiry_date, $plan_id, $trainer_id, $status, $member['id']);
         } else {
             // Insert
             $stmt = $conn->prepare("INSERT INTO members (name, gender, dob, contact, email, address, join_date, expiry_date, plan_id, trainer_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssssssss", $name, $gender, $dob, $contact, $email, $address, $join_date, $expiry_date, $plan_id, $trainer_id, $status);
+            $stmt->bind_param("ssssssssiss", $name, $gender, $dob, $contact, $email, $address, $join_date, $expiry_date, $plan_id, $trainer_id, $status);
         }
 
         if ($stmt->execute()) {
@@ -57,9 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $update_stmt->execute();
                 $update_stmt->close();
                 
+                log_activity("Added new member", "members", "Member ID: $new_member_id, Name: $name");
+                
                 // Redirect to generate PDF receipt
                 redirect("generate_admission_receipt.php?member_id=$new_member_id&msg=1");
             } else {
+                log_activity("Updated member", "members", "Member ID: {$member['id']}, Name: $name");
                 redirect('members.php?msg=2');
             }
         } else {

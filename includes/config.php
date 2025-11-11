@@ -51,6 +51,10 @@ function sanitize($data) {
     return $conn->real_escape_string(trim($data));
 }
 
+function escape_output($data) {
+    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+}
+
 function redirect($url) {
     header("Location: " . BASE_URL . $url);
     exit();
@@ -66,6 +70,23 @@ function get_user_role() {
 
 function get_user_role_id() {
     return $_SESSION['user_role_id'] ?? null;
+}
+
+// CSRF Protection
+function generate_csrf_token() {
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function verify_csrf_token($token) {
+    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+function csrf_field() {
+    $token = generate_csrf_token();
+    return '<input type="hidden" name="csrf_token" value="' . escape_output($token) . '">';
 }
 
 function has_permission($module, $action) {
@@ -105,5 +126,20 @@ function log_activity($action, $module = null, $details = null) {
     $stmt->bind_param("issss", $user_id, $action, $module, $details, $ip);
     $stmt->execute();
     $stmt->close();
+}
+
+// Input validation helpers
+function validate_email($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function validate_date($date, $format = 'Y-m-d') {
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) === $date;
+}
+
+function validate_phone($phone) {
+    // Basic phone validation - adjust pattern as needed
+    return preg_match('/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', $phone);
 }
 ?>
