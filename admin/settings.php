@@ -2,6 +2,37 @@
 require_once '../includes/config.php';
 require_role('admin');
 
+// Get system statistics for overview cards
+$system_stats = [];
+
+// Database size
+$result = $conn->query("SELECT 
+    ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) AS db_size 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE()");
+$system_stats['db_size'] = $result->fetch_assoc()['db_size'] ?? 0;
+
+// Total users
+$result = $conn->query("SELECT COUNT(*) as total FROM users");
+$system_stats['total_users'] = $result->fetch_assoc()['total'];
+
+// Active sessions today
+$today = date('Y-m-d');
+$result = $conn->query("SELECT COUNT(DISTINCT user_id) as total FROM activity_log WHERE DATE(created_at) = '$today'");
+$system_stats['active_sessions'] = $result->fetch_assoc()['total'];
+
+// System uptime (approx based on oldest log entry)
+$result = $conn->query("SELECT DATEDIFF(NOW(), MIN(created_at)) as days FROM activity_log");
+$system_stats['uptime_days'] = $result->fetch_assoc()['days'] ?? 0;
+
+// Recent backup count (last 7 days)
+$result = $conn->query("SELECT COUNT(*) as total FROM activity_log WHERE action LIKE '%backup%' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+$system_stats['recent_backups'] = $result->fetch_assoc()['total'];
+
+// System errors (last 24 hours)
+$result = $conn->query("SELECT COUNT(*) as total FROM activity_log WHERE action LIKE '%error%' AND created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)");
+$system_stats['system_errors'] = $result->fetch_assoc()['total'];
+
 // Handle user operations
 $user_errors = [];
 $user_success = '';
@@ -176,6 +207,95 @@ $settings = $conn->query("SELECT * FROM settings WHERE id = 1")->fetch_assoc();
         <div class="main-wrapper">
          <?php include '../includes/header.php'; ?>  
         <div class="page-content">
+            <div class="container-fluid">
+                <!-- System Overview Cards -->
+                <div class="page-header mb-4">
+                    <h1 class="page-title">System Settings</h1>
+                    <p class="text-muted">Manage your gym settings and system configuration</p>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+                            <div class="info-card-top">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="info-card-title">Database Size</div>
+                                    <h2 class="info-card-value"><?php echo $system_stats['db_size']; ?>MB</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+                            <div class="info-card-top">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="info-card-title">Total Users</div>
+                                    <h2 class="info-card-value"><?php echo $system_stats['total_users']; ?></h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+                            <div class="info-card-top">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <i class="fas fa-user-clock"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="info-card-title">Active Sessions</div>
+                                    <h2 class="info-card-value"><?php echo $system_stats['active_sessions']; ?></h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+                            <div class="info-card-top">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="info-card-title">Uptime</div>
+                                    <h2 class="info-card-value"><?php echo $system_stats['uptime_days']; ?></h2>
+                                </div>
+                            </div>
+                            <div class="info-card-subtitle">days</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+                            <div class="info-card-top">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="info-card-title">Recent Backups</div>
+                                    <h2 class="info-card-value"><?php echo $system_stats['recent_backups']; ?></h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+                            <div class="info-card-top">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="info-card-title">System Errors</div>
+                                    <h2 class="info-card-value"><?php echo $system_stats['system_errors']; ?></h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
             <div class="col-12">
                 <div class="card card-modern fade-in">
                     <div class="card-header">

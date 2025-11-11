@@ -36,19 +36,62 @@ if (isset($_POST['mark_attendance'])) {
 // Get selected date
 $selected_date = $_GET['date'] ?? date('Y-m-d');
 
-// Get all users (members and trainers)
-$members = $conn->query("SELECT id, name, 'member' as role FROM members UNION SELECT id, name, 'trainer' as role FROM trainers ORDER BY name");
+// Get attendance statistics
+$attendance_stats = [];
 
-// Get attendance for selected date
-$attendance_query = $conn->prepare("SELECT a.*, u.name, a.role FROM attendance a JOIN users u ON a.user_id = u.id WHERE a.date = ? ORDER BY u.name");
+// Today's stats
+$today = date('Y-m-d');
+$result = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE date = '$today' AND status = 'present'");
+$attendance_stats['present_today'] = $result->fetch_assoc()['count'];
+
+$result = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE date = '$today' AND status = 'absent'");
+$attendance_stats['absent_today'] = $result->fetch_assoc()['count'];
+
+// Total expected (all active members)
+$result = $conn->query("SELECT COUNT(*) as count FROM members WHERE status = 'active'");
+$attendance_stats['total_expected'] = $result->fetch_assoc()['count'];
+
+// Attendance rate today
+$attendance_stats['attendance_rate'] = $attendance_stats['total_expected'] > 0 ? 
+    round(($attendance_stats['present_today'] / $attendance_stats['total_expected']) * 100, 1) : 0;
+
+// Average monthly attendance
+$current_month = date('Y-m');
+$result = $conn->query("SELECT AVG(daily_present) as avg_attendance FROM (
+    SELECT COUNT(*) as daily_present 
+    FROM attendance 
+    WHERE status = 'present' AND DATE_FORMAT(date, '%Y-%m') = '$current_month'
+    GROUP BY date
+) as daily_stats");
+$attendance_stats['monthly_avg'] = round($result->fetch_assoc()['avg_attendance'] ?? 0, 1);
+
+// Peak attendance day this month
+$result = $conn->query("SELECT MAX(daily_present) as peak FROM (
+    SELECT COUNT(*) as daily_present 
+    FROM attendance 
+    WHERE status = 'present' AND DATE_FORMAT(date, '%Y-%m') = '$current_month'
+    GROUP BY date
+) as daily_stats");
+$attendance_stats['monthly_peak'] = $result->fetch_assoc()['peak'] ?? 0;
+
+// Get all users (members and trainers)
+$users = $conn->query("SELECT id, name, 'member' as role FROM members WHERE status = 'active' UNION SELECT id, name, 'trainer' as role FROM trainers ORDER BY name");
+
+// Get attendance for selected date and convert to associative array
+$attendance_query = $conn->prepare("SELECT * FROM attendance WHERE date = ?");
 $attendance_query->bind_param("s", $selected_date);
 $attendance_query->execute();
-$attendance_records = $attendance_query->get_result();
+$attendance_result = $attendance_query->get_result();
 
-// Get attendance summary
-$today = date('Y-m-d');
-$present_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE date = '$today' AND status = 'present'")->fetch_assoc()['count'];
-$absent_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE date = '$today' AND status = 'absent'")->fetch_assoc()['count'];
+$attendance_records = [];
+while ($record = $attendance_result->fetch_assoc()) {
+    $attendance_records[$record['user_id']] = $record;
+}
+
+// Legacy variables for backward compatibility
+$present_count = $attendance_stats['present_today'];
+$absent_count = $attendance_stats['absent_today'];
+$total_expected = $attendance_stats['total_expected'];
 ?>
 
 <!DOCTYPE html>
@@ -78,38 +121,83 @@ $absent_count = $conn->query("SELECT COUNT(*) as count FROM attendance WHERE dat
     </div>
 </div>
 
-<!-- Summary Cards -->
-<div class="row g-4 mb-4">
-    <div class="col-md-4">
-        <div class="feature-card">
-            <div class="card-icon bg-success-light text-success">
-                <i class="bi bi-person-check-fill"></i>
-            </div>
-            <div class="card-content">
-                <h3 class="card-title"><?php echo $present_count; ?></h3>
-                <p class="card-text">Present Today</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="feature-card">
-            <div class="card-icon bg-danger-light text-danger">
-                <i class="bi bi-person-x-fill"></i>
-            </div>
-            <div class="card-content">
-                <h3 class="card-title"><?php echo $absent_count; ?></h3>
-                <p class="card-text">Absent Today</p>
+<!-- Attendance Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Present Today</div>
+                    <h2 class="info-card-value"><?php echo $attendance_stats['present_today']; ?></h2>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="feature-card">
-            <div class="card-icon bg-info-light text-info">
-                <i class="bi bi-people-fill"></i>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Absent Today</div>
+                    <h2 class="info-card-value"><?php echo $attendance_stats['absent_today']; ?></h2>
+                </div>
             </div>
-            <div class="card-content">
-                <h3 class="card-title"><?php echo $total_expected; ?></h3>
-                <p class="card-text">Total Expected</p>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Expected</div>
+                    <h2 class="info-card-value"><?php echo $attendance_stats['total_expected']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Attendance Rate</div>
+                    <h2 class="info-card-value"><?php echo $attendance_stats['attendance_rate']; ?>%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Monthly Avg</div>
+                    <h2 class="info-card-value"><?php echo $attendance_stats['monthly_avg']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Monthly Peak</div>
+                    <h2 class="info-card-value"><?php echo $attendance_stats['monthly_peak']; ?></h2>
+                </div>
             </div>
         </div>
     </div>

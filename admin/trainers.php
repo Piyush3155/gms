@@ -65,6 +65,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($errors)) {
     ];
 }
 
+// Get trainer statistics
+$trainer_stats = [];
+
+// Total trainers
+$result = $conn->query("SELECT COUNT(*) as total FROM trainers");
+$trainer_stats['total_trainers'] = $result->fetch_assoc()['total'];
+
+// Average members per trainer
+$result = $conn->query("SELECT AVG(member_count) as avg_members FROM (SELECT COUNT(m.id) as member_count FROM trainers t LEFT JOIN members m ON t.id = m.trainer_id GROUP BY t.id) as trainer_data");
+$trainer_stats['avg_members_per_trainer'] = round($result->fetch_assoc()['avg_members'] ?? 0, 1);
+
+// Today's training sessions (attendance records for trainers)
+$today = date('Y-m-d');
+$result = $conn->query("SELECT COUNT(DISTINCT m.trainer_id) as active_trainers FROM attendance a JOIN members m ON a.user_id = m.id WHERE a.date = '$today' AND a.status = 'present'");
+$trainer_stats['todays_active_trainers'] = $result->fetch_assoc()['active_trainers'];
+
+// Most experienced trainer
+$result = $conn->query("SELECT MAX(experience) as max_experience FROM trainers");
+$trainer_stats['max_experience'] = $result->fetch_assoc()['max_experience'] ?? 0;
+
+// Average experience
+$result = $conn->query("SELECT AVG(experience) as avg_experience FROM trainers WHERE experience IS NOT NULL");
+$trainer_stats['avg_experience'] = round($result->fetch_assoc()['avg_experience'] ?? 0, 1);
+
+// Total salary expense
+$result = $conn->query("SELECT SUM(salary) as total_salary FROM trainers");
+$trainer_stats['total_salary'] = $result->fetch_assoc()['total_salary'] ?? 0;
+
 // Get all trainers
 $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers t LEFT JOIN members m ON t.id = m.trainer_id GROUP BY t.id");
 ?>
@@ -95,6 +123,88 @@ $trainers = $conn->query("SELECT t.*, COUNT(m.id) as member_count FROM trainers 
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trainerModal">
             <i class="fas fa-plus me-1"></i>Add New Trainer
         </button>
+    </div>
+</div>
+
+<!-- Trainer Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Trainers</div>
+                    <h2 class="info-card-value"><?php echo $trainer_stats['total_trainers']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Active Today</div>
+                    <h2 class="info-card-value"><?php echo $trainer_stats['todays_active_trainers']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Avg Members</div>
+                    <h2 class="info-card-value"><?php echo $trainer_stats['avg_members_per_trainer']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-award"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Avg Experience</div>
+                    <h2 class="info-card-value"><?php echo $trainer_stats['avg_experience']; ?>y</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Max Experience</div>
+                    <h2 class="info-card-value"><?php echo $trainer_stats['max_experience']; ?>y</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Salary</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($trainer_stats['total_salary'] / 1000, 0); ?>k</h2>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

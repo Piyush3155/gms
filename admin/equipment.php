@@ -54,6 +54,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Get equipment statistics
+$equipment_stats = [];
+
+// Total equipment
+$result = $conn->query("SELECT COUNT(*) as total FROM equipment");
+$equipment_stats['total_equipment'] = $result->fetch_assoc()['total'];
+
+// Available equipment
+$result = $conn->query("SELECT COUNT(*) as total FROM equipment WHERE status = 'available'");
+$equipment_stats['available_equipment'] = $result->fetch_assoc()['total'];
+
+// Under maintenance
+$result = $conn->query("SELECT COUNT(*) as total FROM equipment WHERE status = 'maintenance'");
+$equipment_stats['under_maintenance'] = $result->fetch_assoc()['total'];
+
+// Out of order
+$result = $conn->query("SELECT COUNT(*) as total FROM equipment WHERE status = 'out_of_order'");
+$equipment_stats['out_of_order'] = $result->fetch_assoc()['total'];
+
+// Needs maintenance (next maintenance due within 7 days)
+$result = $conn->query("SELECT COUNT(*) as total FROM equipment WHERE next_maintenance <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND next_maintenance >= CURDATE() AND status != 'maintenance'");
+$equipment_stats['needs_maintenance'] = $result->fetch_assoc()['total'];
+
+// Total value
+$result = $conn->query("SELECT SUM(purchase_cost * quantity) as total_value FROM equipment");
+$equipment_stats['total_value'] = $result->fetch_assoc()['total_value'] ?? 0;
+
 // Get all equipment
 $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
 ?>
@@ -78,23 +105,104 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Equipment Management</h2>
-            <div>
-                <button class="btn btn-success me-2" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-2"></i>Export to Excel
-                </button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF()">
-                    <i class="fas fa-file-pdf me-2"></i>Export to PDF
-                </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#equipmentModal">
-                    <i class="fas fa-plus me-2"></i>Add Equipment
-                </button>
+        <div class="page-header">
+    <h1 class="page-title">Equipment Management</h1>
+    <div class="page-options">
+        <button class="btn btn-success me-2" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-1"></i>Export Excel
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#equipmentModal">
+            <i class="fas fa-plus me-1"></i>Add Equipment
+        </button>
+    </div>
+</div>
+
+<!-- Equipment Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Equipment</div>
+                    <h2 class="info-card-value"><?php echo $equipment_stats['total_equipment']; ?></h2>
+                </div>
             </div>
         </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Available</div>
+                    <h2 class="info-card-value"><?php echo $equipment_stats['available_equipment']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Under Maintenance</div>
+                    <h2 class="info-card-value"><?php echo $equipment_stats['under_maintenance']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Out of Order</div>
+                    <h2 class="info-card-value"><?php echo $equipment_stats['out_of_order']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Needs Maintenance</div>
+                    <h2 class="info-card-value"><?php echo $equipment_stats['needs_maintenance']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Value</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($equipment_stats['total_value'] / 1000, 0); ?>k</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <div class="table-responsive">
-            <table id="equipment-table" class="table table-modern" cellspacing="0" width="100%">
+        <div class="card-modern">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="equipment-table" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -135,6 +243,7 @@ $equipment_list = $conn->query("SELECT * FROM equipment ORDER BY name");
             </table>
         </div>
     </div>
+</div>
 
     <!-- Equipment Modal -->
     <div class="modal fade" id="equipmentModal" tabindex="-1">

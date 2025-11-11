@@ -48,8 +48,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Get plan statistics
+$plan_stats = [];
+
+// Total plans
+$result = $conn->query("SELECT COUNT(*) as total FROM plans");
+$plan_stats['total_plans'] = $result->fetch_assoc()['total'];
+
+// Active subscriptions (members with plans)
+$result = $conn->query("SELECT COUNT(*) as total FROM members WHERE plan_id IS NOT NULL AND status = 'active'");
+$plan_stats['active_subscriptions'] = $result->fetch_assoc()['total'];
+
+// Most popular plan
+$result = $conn->query("SELECT p.name, COUNT(m.id) as member_count FROM plans p LEFT JOIN members m ON p.id = m.plan_id WHERE m.status = 'active' GROUP BY p.id ORDER BY member_count DESC LIMIT 1");
+$popular_plan = $result->fetch_assoc();
+$plan_stats['most_popular_plan'] = $popular_plan['name'] ?? 'None';
+$plan_stats['popular_plan_count'] = $popular_plan['member_count'] ?? 0;
+
+// Revenue by plans (this month)
+$current_month = date('Y-m');
+$result = $conn->query("SELECT SUM(p.amount) as total FROM payments pay JOIN plans p ON pay.plan_id = p.id WHERE pay.status = 'paid' AND DATE_FORMAT(pay.payment_date, '%Y-%m') = '$current_month'");
+$plan_stats['monthly_plan_revenue'] = $result->fetch_assoc()['total'] ?? 0;
+
+// Average plan price
+$result = $conn->query("SELECT AVG(amount) as avg_price FROM plans");
+$plan_stats['avg_plan_price'] = $result->fetch_assoc()['avg_price'] ?? 0;
+
+// Highest priced plan
+$result = $conn->query("SELECT MAX(amount) as max_price FROM plans");
+$plan_stats['highest_plan_price'] = $result->fetch_assoc()['max_price'] ?? 0;
+
 // Get all plans
-$plans = $conn->query("SELECT * FROM plans");
+$plans = $conn->query("SELECT p.*, COUNT(m.id) as member_count FROM plans p LEFT JOIN members m ON p.id = m.plan_id WHERE m.status = 'active' OR m.id IS NULL GROUP BY p.id");
 ?>
 
 <!DOCTYPE html>
@@ -78,6 +108,89 @@ $plans = $conn->query("SELECT * FROM plans");
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#planModal">
             <i class="fas fa-plus me-1"></i>Add New Plan
         </button>
+    </div>
+</div>
+
+<!-- Plans Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Plans</div>
+                    <h2 class="info-card-value"><?php echo $plan_stats['total_plans']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Active Subscriptions</div>
+                    <h2 class="info-card-value"><?php echo $plan_stats['active_subscriptions']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Most Popular</div>
+                    <h2 class="info-card-value"><?php echo $plan_stats['popular_plan_count']; ?></h2>
+                </div>
+            </div>
+            <div class="info-card-subtitle"><?php echo htmlspecialchars($plan_stats['most_popular_plan']); ?></div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Monthly Revenue</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($plan_stats['monthly_plan_revenue'], 0); ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Average Price</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($plan_stats['avg_plan_price'], 0); ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Highest Price</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($plan_stats['highest_plan_price'], 0); ?></h2>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

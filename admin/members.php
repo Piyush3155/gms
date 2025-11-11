@@ -69,6 +69,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Get member statistics
+$member_stats = [];
+
+// Total members
+$result = $conn->query("SELECT COUNT(*) as total FROM members");
+$member_stats['total_members'] = $result->fetch_assoc()['total'];
+
+// Active members
+$result = $conn->query("SELECT COUNT(*) as total FROM members WHERE status = 'active'");
+$member_stats['active_members'] = $result->fetch_assoc()['total'];
+
+// Recent registrations (last 7 days)
+$result = $conn->query("SELECT COUNT(*) as total FROM members WHERE join_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)");
+$member_stats['recent_registrations'] = $result->fetch_assoc()['total'];
+
+// Expiring soon (next 30 days)
+$result = $conn->query("SELECT COUNT(*) as total FROM members WHERE expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND expiry_date >= CURDATE() AND status = 'active'");
+$member_stats['expiring_soon'] = $result->fetch_assoc()['total'];
+
+// Inactive members
+$result = $conn->query("SELECT COUNT(*) as total FROM members WHERE status = 'inactive'");
+$member_stats['inactive_members'] = $result->fetch_assoc()['total'];
+
+// Average age
+$result = $conn->query("SELECT AVG(TIMESTAMPDIFF(YEAR, dob, CURDATE())) as avg_age FROM members WHERE dob IS NOT NULL");
+$member_stats['avg_age'] = round($result->fetch_assoc()['avg_age'] ?? 0);
+
 // Get all members
 $members = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name FROM members m LEFT JOIN plans p ON m.plan_id = p.id LEFT JOIN trainers t ON m.trainer_id = t.id");
 
@@ -103,6 +130,88 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#memberModal">
             <i class="fas fa-plus me-1"></i>Add New Member
         </button>
+    </div>
+</div>
+
+<!-- Member Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Members</div>
+                    <h2 class="info-card-value"><?php echo $member_stats['total_members']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Active Members</div>
+                    <h2 class="info-card-value"><?php echo $member_stats['active_members']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Recent (7 days)</div>
+                    <h2 class="info-card-value"><?php echo $member_stats['recent_registrations']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Expiring Soon</div>
+                    <h2 class="info-card-value"><?php echo $member_stats['expiring_soon']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Inactive</div>
+                    <h2 class="info-card-value"><?php echo $member_stats['inactive_members']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="fas fa-birthday-cake"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Avg Age</div>
+                    <h2 class="info-card-value"><?php echo $member_stats['avg_age']; ?></h2>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

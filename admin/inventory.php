@@ -51,6 +51,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Get inventory statistics
+$inventory_stats = [];
+
+// Total items
+$result = $conn->query("SELECT COUNT(*) as total FROM inventory");
+$inventory_stats['total_items'] = $result->fetch_assoc()['total'];
+
+// Low stock items (quantity <= 10)
+$result = $conn->query("SELECT COUNT(*) as total FROM inventory WHERE quantity <= 10 AND quantity > 0");
+$inventory_stats['low_stock'] = $result->fetch_assoc()['total'];
+
+// Out of stock items (quantity = 0)
+$result = $conn->query("SELECT COUNT(*) as total FROM inventory WHERE quantity = 0");
+$inventory_stats['out_of_stock'] = $result->fetch_assoc()['total'];
+
+// Total inventory value
+$result = $conn->query("SELECT SUM(quantity * unit_price) as total_value FROM inventory");
+$inventory_stats['total_value'] = $result->fetch_assoc()['total_value'] ?? 0;
+
+// Expired items
+$result = $conn->query("SELECT COUNT(*) as total FROM inventory WHERE expiry_date < CURDATE() AND expiry_date IS NOT NULL");
+$inventory_stats['expired_items'] = $result->fetch_assoc()['total'];
+
+// Items expiring soon (within 30 days)
+$result = $conn->query("SELECT COUNT(*) as total FROM inventory WHERE expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND expiry_date > CURDATE() AND expiry_date IS NOT NULL");
+$inventory_stats['expiring_soon'] = $result->fetch_assoc()['total'];
+
 // Get all inventory
 $inventory = $conn->query("SELECT i.*, s.name as supplier_name FROM inventory i LEFT JOIN suppliers s ON i.supplier_id = s.id ORDER BY i.name");
 
@@ -78,17 +105,101 @@ $suppliers = $conn->query("SELECT id, name FROM suppliers ORDER BY name");
 
     <div class="page-content">
         <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Inventory Management</h2>
-            <div>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemModal">
-                    <i class="fas fa-plus me-2"></i>Add New Item
-                </button>
+        <div class="page-header">
+    <h1 class="page-title">Inventory Management</h1>
+    <div class="page-options">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemModal">
+            <i class="fas fa-plus me-1"></i>Add Item
+        </button>
+    </div>
+</div>
+
+<!-- Inventory Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Items</div>
+                    <h2 class="info-card-value"><?php echo $inventory_stats['total_items']; ?></h2>
+                </div>
             </div>
         </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Low Stock</div>
+                    <h2 class="info-card-value"><?php echo $inventory_stats['low_stock']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Out of Stock</div>
+                    <h2 class="info-card-value"><?php echo $inventory_stats['out_of_stock']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Value</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($inventory_stats['total_value'] / 1000, 0); ?>k</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Expired</div>
+                    <h2 class="info-card-value"><?php echo $inventory_stats['expired_items']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Expiring Soon</div>
+                    <h2 class="info-card-value"><?php echo $inventory_stats['expiring_soon']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <div class="table-responsive">
-            <table id="inventory-table" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+        <div class="card-modern">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="inventory-table" class="table table-modern" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -137,6 +248,7 @@ $suppliers = $conn->query("SELECT id, name FROM suppliers ORDER BY name");
             </table>
         </div>
     </div>
+</div>
 
     <!-- Item Modal -->
     <div class="modal fade" id="itemModal" tabindex="-1">

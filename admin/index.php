@@ -114,83 +114,94 @@ $recent_activities = $conn->query("SELECT a.*, u.name as user_name FROM activity
 
         <!-- Statistics Cards -->
         <div class="row mb-4">
-            <div class="col-md-3">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.1s;">
-                    <div class="info-card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Total Members</div>
-                        <h2 class="info-card-value"><?php echo $stats['members']; ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Total Members</div>
+                            <h2 class="info-card-value"><?php echo $stats['members']; ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.2s;">
-                    <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Active Members</div>
-                        <h2 class="info-card-value"><?php echo $stats['active_members']; ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Active Members</div>
+                            <h2 class="info-card-value"><?php echo $stats['active_members']; ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.3s;">
-                    <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Trainers</div>
-                        <h2 class="info-card-value"><?php echo $stats['trainers']; ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Trainers</div>
+                            <h2 class="info-card-value"><?php echo $stats['trainers']; ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.4s;">
-                    <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Today's Attendance</div>
-                        <h2 class="info-card-value"><?php echo $stats['today_attendance']; ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Today's Attendance</div>
+                            <h2 class="info-card-value"><?php echo $stats['today_attendance']; ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.5s;">
-                    <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                        <i class="fas fa-rupee-sign"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Monthly Revenue</div>
-                        <h2 class="info-card-value">₹<?php echo number_format($stats['monthly_revenue'], 0); ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Monthly Revenue</div>
+                            <h2 class="info-card-value">₹<?php echo number_format($stats['monthly_revenue'], 0); ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.6s;">
-                    <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Pending Payments</div>
-                        <h2 class="info-card-value"><?php echo $stats['pending_payments']; ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Pending Payments</div>
+                            <h2 class="info-card-value"><?php echo $stats['pending_payments']; ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                 <div class="info-card fade-in" style="animation-delay: 0.7s;">
-                    <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                    <div class="info-card-content">
-                        <div class="info-card-title">Low Stock Items</div>
-                        <h2 class="info-card-value"><?php echo $stats['low_stock']; ?></h2>
+                    <div class="info-card-top">
+                        <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Low Stock Items</div>
+                            <h2 class="info-card-value"><?php echo $stats['low_stock']; ?></h2>
+                        </div>
                     </div>
                 </div>
             </div>

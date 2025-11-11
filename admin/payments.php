@@ -27,6 +27,35 @@ if (isset($_POST['record_payment'])) {
     $stmt->close();
 }
 
+// Get payment statistics
+$payment_stats = [];
+
+// Today's revenue
+$today = date('Y-m-d');
+$result = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE(payment_date) = '$today'");
+$payment_stats['todays_revenue'] = $result->fetch_assoc()['total'] ?? 0;
+
+// Monthly revenue
+$current_month = date('Y-m');
+$result = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE_FORMAT(payment_date, '%Y-%m') = '$current_month'");
+$payment_stats['monthly_revenue'] = $result->fetch_assoc()['total'] ?? 0;
+
+// Total payments count
+$result = $conn->query("SELECT COUNT(*) as total FROM payments WHERE status='paid'");
+$payment_stats['total_payments'] = $result->fetch_assoc()['total'];
+
+// Pending payments count
+$result = $conn->query("SELECT COUNT(*) as total FROM payments WHERE status='pending'");
+$payment_stats['pending_payments'] = $result->fetch_assoc()['total'];
+
+// Failed payments count
+$result = $conn->query("SELECT COUNT(*) as total FROM payments WHERE status='failed'");
+$payment_stats['failed_payments'] = $result->fetch_assoc()['total'];
+
+// Average payment amount
+$result = $conn->query("SELECT AVG(amount) as avg_amount FROM payments WHERE status='paid'");
+$payment_stats['avg_payment'] = $result->fetch_assoc()['avg_amount'] ?? 0;
+
 // Get all payments with member and plan details
 $payments = $conn->query("
     SELECT p.*, m.name as member_name, pl.name as plan_name
@@ -40,10 +69,10 @@ $payments = $conn->query("
 $members = $conn->query("SELECT id, name FROM members ORDER BY name");
 $plans = $conn->query("SELECT id, name, amount FROM plans ORDER BY name");
 
-// Calculate totals
-$total_revenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid'")->fetch_assoc()['total'] ?? 0;
-$this_month_revenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status='paid' AND DATE_FORMAT(payment_date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')")->fetch_assoc()['total'] ?? 0;
-$pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status='pending'")->fetch_assoc()['count'];
+// Calculate totals (legacy variables for backward compatibility)
+$total_revenue = $payment_stats['monthly_revenue'];
+$this_month_revenue = $payment_stats['monthly_revenue'];
+$pending_payments = $payment_stats['pending_payments'];
 ?>
 
 <!DOCTYPE html>
@@ -74,8 +103,91 @@ $pending_payments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE s
     </div>
 </div>
 
+<!-- Payment Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.1s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Today's Revenue</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($payment_stats['todays_revenue'], 0); ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Monthly Revenue</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($payment_stats['monthly_revenue'], 0); ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Total Payments</div>
+                    <h2 class="info-card-value"><?php echo $payment_stats['total_payments']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Pending</div>
+                    <h2 class="info-card-value"><?php echo $payment_stats['pending_payments']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Failed</div>
+                    <h2 class="info-card-value"><?php echo $payment_stats['failed_payments']; ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+            <div class="info-card-top">
+                <div class="info-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">Avg Payment</div>
+                    <h2 class="info-card-value">₹<?php echo number_format($payment_stats['avg_payment'], 0); ?></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Revenue Summary -->
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-4" style="display: none;">
+    <!-- This section is now replaced by the new statistics cards above -->
     <div class="col-md-4">
         <div class="feature-card">
             <div class="card-icon bg-success-light text-success">

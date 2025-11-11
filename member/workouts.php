@@ -82,30 +82,34 @@ $workout_plans = $conn->query("
 
                                     <div class="row mb-3">
                                         <div class="col-6">
-                                            <div class="info-card" style="padding: 1rem;">
-                                                <div class="info-card-icon" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                                                    <i class="fas fa-clock"></i>
-                                                </div>
-                                                <div class="info-card-content">
-                                                    <div class="info-card-title" style="font-size: 0.75rem;">Duration</div>
-                                                    <div class="info-card-value" style="font-size: 1.5rem;"><?php echo $plan['duration']; ?> weeks</div>
+                                            <div class="info-card">
+                                                <div class="info-card-top">
+                                                    <div class="info-card-icon">
+                                                        <i class="fas fa-clock"></i>
+                                                    </div>
+                                                    <div class="info-card-content">
+                                                        <div class="info-card-title">Duration</div>
+                                                        <h2 class="info-card-value"><?php echo $plan['duration']; ?> weeks</h2>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-6">
-                                            <div class="info-card" style="padding: 1rem;">
-                                                <div class="info-card-icon" style="width: 48px; height: 48px; font-size: 1.25rem;">
-                                                    <i class="fas fa-chart-line"></i>
-                                                </div>
-                                                <div class="info-card-content">
-                                                    <div class="info-card-title" style="font-size: 0.75rem;">Level</div>
-                                                    <div class="info-card-value" style="font-size: 1.25rem;">
-                                                        <span class="badge badge-status badge-<?php
-                                                            echo $plan['difficulty'] == 'beginner' ? 'active' :
-                                                                 ($plan['difficulty'] == 'intermediate' ? 'pending' : 'inactive');
-                                                        ?>">
-                                                            <?php echo ucfirst($plan['difficulty']); ?>
-                                                        </span>
+                                            <div class="info-card">
+                                                <div class="info-card-top">
+                                                    <div class="info-card-icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </div>
+                                                    <div class="info-card-content">
+                                                        <div class="info-card-title">Level</div>
+                                                        <div class="info-card-value">
+                                                            <span class="badge badge-status badge-<?php
+                                                                echo $plan['difficulty'] == 'beginner' ? 'active' :
+                                                                     ($plan['difficulty'] == 'intermediate' ? 'pending' : 'inactive');
+                                                            ?>">
+                                                                <?php echo ucfirst($plan['difficulty']); ?>
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
