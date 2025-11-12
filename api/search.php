@@ -23,7 +23,7 @@ if (isset($_GET['query']) && !empty(trim($_GET['query']))) {
     }
 
     // Search Plans
-    $sql_plans = "SELECT id, name, duration, price FROM plans WHERE name LIKE '%$query%' LIMIT 5";
+    $sql_plans = "SELECT id, name, duration_months, amount FROM plans WHERE name LIKE '%$query%' LIMIT 5";
     $result_plans = $conn->query($sql_plans);
     if ($result_plans && $result_plans->num_rows > 0) {
         while ($row = $result_plans->fetch_assoc()) {
