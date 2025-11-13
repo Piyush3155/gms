@@ -7,11 +7,26 @@ if (is_logged_in()) {
 
 $errors = [];
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+// Initialize rate limiter
+$rateLimiter = new RateLimiter($conn);
+$rateLimiter->cleanupOldAttempts();
 
-    if (empty($email) || empty($password)) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = sanitize_input($_POST['email'], 'email');
+    $password = $_POST['password'];
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+
+    // Check if IP is blocked
+    if ($rateLimiter->isBlocked($ip_address, 'ip')) {
+        $errors[] = "Too many failed login attempts. Please try again in 15 minutes.";
+        log_security_event('login_blocked', "IP blocked due to multiple failed attempts: $ip_address", 'warning');
+    } 
+    // Check if email is blocked
+    elseif ($rateLimiter->isBlocked($email, 'email')) {
+        $errors[] = "Too many failed login attempts for this account. Please try again in 15 minutes.";
+        log_security_event('login_blocked', "Email blocked due to multiple failed attempts: $email", 'warning');
+    } 
+    elseif (empty($email) || empty($password)) {
         $errors[] = "Please fill in all fields.";
     } else {
         $stmt = $conn->prepare("SELECT u.id, u.name, u.password, u.role_id, r.name as role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.email = ?");
@@ -22,26 +37,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($result->num_rows == 1) {
             $user = $result->fetch_assoc();
             if (password_verify($password, $user['password'])) {
+                // Clear failed attempts on successful login
+                $rateLimiter->clearAttempts($ip_address, 'ip');
+                $rateLimiter->clearAttempts($email, 'email');
+                
+                // Set session variables
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_role'] = strtolower($user['role_name']);
                 $_SESSION['user_role_id'] = $user['role_id'];
+                $_SESSION['ip_address'] = $ip_address;
+                $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+                $_SESSION['regenerated'] = time();
+                
+                // Check if password needs rehash
+                if (password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
+                    $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                    $update_stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $update_stmt->bind_param("si", $new_hash, $user['id']);
+                    $update_stmt->execute();
+                    $update_stmt->close();
+                }
+                
+                // Log successful login
+                log_activity('Logged in successfully', 'auth', "User: {$user['name']}");
+                log_security_event('login_success', "User {$user['name']} logged in from $ip_address", 'info');
 
                 // Role-based redirection
-                if ($user['role_name'] == 'admin') {
+                if ($user['role_name'] == 'Admin') {
                     redirect('admin/index.php');
-                } elseif ($user['role_name'] == 'trainer') {
+                } elseif ($user['role_name'] == 'Trainer') {
                     redirect('trainer/index.php');
-                } elseif ($user['role_name'] == 'member') {
+                } elseif ($user['role_name'] == 'Member') {
                     redirect('member/index.php');
                 } else {
                     redirect('dashboard.php');
                 }
             } else {
-                $errors[] = "Invalid password.";
+                // Record failed attempt
+                $rateLimiter->recordAttempt($ip_address, $email);
+                $remaining = $rateLimiter->getRemainingAttempts($ip_address, 'ip');
+                $errors[] = "Invalid password. You have $remaining attempts remaining.";
+                log_security_event('login_failed', "Failed login attempt for email: $email from IP: $ip_address", 'warning');
             }
         } else {
-            $errors[] = "User not found.";
+            // Record failed attempt even for non-existent users
+            $rateLimiter->recordAttempt($ip_address, $email);
+            $remaining = $rateLimiter->getRemainingAttempts($ip_address, 'ip');
+            $errors[] = "User not found. You have $remaining attempts remaining.";
+            log_security_event('login_failed', "Failed login attempt for non-existent email: $email from IP: $ip_address", 'warning');
         }
         $stmt->close();
     }
@@ -54,8 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - <?php echo SITE_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.0/font/bootstrap-icons.min.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
     <link href="assets/css/custom.css" rel="stylesheet">

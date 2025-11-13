@@ -372,7 +372,11 @@ $header_settings = $header_settings_query->fetch_assoc();
     </div>
 </header>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/custom.css?v=1.0">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/animations.css?v=1.0">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/components.css?v=1.0">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/responsive.css?v=1.0">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
@@ -443,10 +447,6 @@ if (isset($_GET['msg'])) {
     </script>";
 }
 ?>
-
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/animations.css">
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/components.css">
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>assets/css/responsive.css">
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>

@@ -36,8 +36,9 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trainer Dashboard - <?php echo SITE_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.0/font/bootstrap-icons.min.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
@@ -58,7 +59,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-body text-center">
                         <i class="fas fa-users fa-2x text-primary mb-2"></i>
                         <h4><?php echo $assigned_members; ?></h4>
@@ -67,7 +68,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-body text-center">
                         <i class="fas fa-user-check fa-2x text-success mb-2"></i>
                         <h4><?php echo $active_members; ?></h4>
@@ -76,7 +77,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-body text-center">
                         <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
                         <h4><?php echo $today_sessions; ?></h4>
@@ -85,7 +86,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-body text-center">
                         <i class="fas fa-award fa-2x text-warning mb-2"></i>
                         <h4><?php echo $trainer['experience']; ?> yrs</h4>
@@ -97,7 +98,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
 
         <div class="row mb-4">
             <div class="col-md-6">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-body text-center">
                         <i class="fas fa-dumbbell fa-2x text-secondary mb-2"></i>
                         <h4><?php echo $workout_plans_count; ?></h4>
@@ -106,7 +107,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-body text-center">
                         <i class="fas fa-utensils fa-2x text-dark mb-2"></i>
                         <h4><?php echo $diet_plans_count; ?></h4>
@@ -119,7 +120,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
         <!-- Recent Activity -->
         <div class="row">
             <div class="col-md-6">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-header">
                         <h5>Upcoming Classes</h5>
                     </div>
@@ -145,7 +146,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
             </div>
 
             <div class="col-md-6">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-header">
                         <h5>Recent Members</h5>
                     </div>
@@ -172,7 +173,7 @@ $recent_members = $conn->query("SELECT m.name, m.join_date FROM members m WHERE 
         <!-- Quick Actions -->
         <div class="row mt-4">
             <div class="col-12">
-                <div class="card">
+                <div class="card enhanced-card">
                     <div class="card-header">
                         <h5>Quick Actions</h5>
                     </div>

@@ -12,6 +12,12 @@ session_start();
 // Include database connection
 require_once 'db.php';
 
+// Include security functions
+require_once 'security.php';
+
+// Set security headers
+set_security_headers();
+
 // Get gym settings from database
 function get_gym_settings() {
     global $conn;

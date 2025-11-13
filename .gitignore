@@ -1,0 +1,75 @@
+# Environment & Configuration
+.env
+includes/config.php
+.env.local
+.env.production
+
+# Database Backups
+backups/*.sql
+backups/*.zip
+backups/*.tar.gz
+
+# Logs
+logs/
+*.log
+error_log
+debug.log
+
+# Uploads & User Content
+uploads/
+user_uploads/
+member_photos/
+profile_images/
+
+# Cache
+cache/
+*.cache
+tmp/
+temp/
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# IDE & Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.phpstorm.meta.php
+
+# Composer
+vendor/
+composer.lock
+
+# Node modules (if using npm)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build files
+dist/
+build/
+
+# QR Code Cache
+phpqrcode/cache/*
+!phpqrcode/cache/.gitkeep
+
+# Session files
+sessions/
+
+# OS specific
+._.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Security sensitive
+*.pem
+*.key
+*.cert
+ssl/
+certificates/

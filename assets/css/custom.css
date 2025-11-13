@@ -246,7 +246,13 @@
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
     padding: 1.25rem 2rem;
-    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+/* ============================================
+   FIX FOR BOOTSTRAP ICONS
+   ============================================ */
+
+.bi {
+    font-family: 'bootstrap-icons' !important;
 }
 
 /* Alert Enhancements */
@@ -1243,3 +1249,32 @@
         width: 100%;
     }
 }
+
+/* Enhanced Card Styles */
+.enhanced-card {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+}
+
+.enhanced-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.enhanced-card .card-header {
+    background-color: #4f46e5;
+    color: #fff;
+    font-weight: bold;
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.enhanced-card .card-body {
+    padding: 1.5rem;
+    font-size: 1rem;
+    color: #333;
+}
+

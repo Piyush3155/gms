@@ -2,6 +2,75 @@
 require_once '../includes/config.php';
 require_role('admin');
 
+// Handle AJAX requests for sending emails
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !isset($input['action'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid request']);
+        exit;
+    }
+    
+    $settings = get_gym_settings();
+    
+    // Send single email
+    if ($input['action'] === 'send_single') {
+        $member_id = (int)$input['member_id'];
+        $name = $input['name'];
+        $email = $input['email'];
+        $expiry_date = $input['expiry_date'];
+        $days_remaining = (int)$input['days_remaining'];
+        
+        $subject = "Membership Expiry Notice - " . $settings['gym_name'];
+        $message = "Dear {$name},\n\nThis is a reminder that your membership with {$settings['gym_name']} is expiring soon.\n\nMembership Details:\n- Expiry Date: " . date('F j, Y', strtotime($expiry_date)) . "\n- Days Remaining: {$days_remaining}\n\nPlease renew your membership to continue enjoying our facilities.\n\nContact: " . ($settings['contact'] ?: 'N/A') . "\nEmail: " . ($settings['email'] ?: 'N/A') . "\n\nBest regards,\n{$settings['gym_name']} Team";
+        
+        $headers = "From: " . ($settings['email'] ?: 'noreply@gym.com') . "\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+        
+        if (mail($email, $subject, $message, $headers)) {
+            echo json_encode(['success' => true, 'message' => 'Email sent successfully']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to send email']);
+        }
+        exit;
+    }
+    
+    // Send bulk emails
+    if ($input['action'] === 'send_bulk') {
+        $member_ids = array_map('intval', $input['member_ids']);
+        
+        $placeholders = str_repeat('?,', count($member_ids) - 1) . '?';
+        $stmt = $conn->prepare("
+            SELECT m.id, m.name, m.email,
+                   DATE_ADD(COALESCE(lp.payment_date, m.join_date), INTERVAL p.duration_months MONTH) as expiry_date,
+                   DATEDIFF(DATE_ADD(COALESCE(lp.payment_date, m.join_date), INTERVAL p.duration_months MONTH), CURDATE()) as days_remaining
+            FROM members m
+            JOIN plans p ON m.plan_id = p.id
+            LEFT JOIN (SELECT member_id, MAX(payment_date) as payment_date FROM payments WHERE status = 'paid' GROUP BY member_id) lp ON m.id = lp.member_id
+            WHERE m.id IN ($placeholders)
+        ");
+        
+        $stmt->bind_param(str_repeat('i', count($member_ids)), ...$member_ids);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $sent_count = 0;
+        while ($member = $result->fetch_assoc()) {
+            $subject = "Membership Expiry Notice - " . $settings['gym_name'];
+            $message = "Dear {$member['name']},\n\nThis is a reminder that your membership with {$settings['gym_name']} is expiring soon.\n\nMembership Details:\n- Expiry Date: " . date('F j, Y', strtotime($member['expiry_date'])) . "\n- Days Remaining: {$member['days_remaining']}\n\nPlease renew your membership to continue enjoying our facilities.\n\nContact: " . ($settings['contact'] ?: 'N/A') . "\nEmail: " . ($settings['email'] ?: 'N/A') . "\n\nBest regards,\n{$settings['gym_name']} Team";
+            
+            $headers = "From: " . ($settings['email'] ?: 'noreply@gym.com') . "\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+            
+            if (mail($member['email'], $subject, $message, $headers)) {
+                $sent_count++;
+            }
+        }
+        
+        echo json_encode(['success' => true, 'message' => 'Bulk emails sent', 'sent_count' => $sent_count]);
+        exit;
+    }
+}
+
 // Get expiry alert days from URL parameter or default to 30 days
 $alert_days = isset($_GET['days']) ? (int)$_GET['days'] : 30;
 
@@ -74,11 +143,12 @@ $total_expiring = $critical_count + $warning_count;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Send Expiry Emails - <?php echo SITE_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.0/font/bootstrap-icons.min.css?v=1.0">
 </head>
 <body>
     <div class="main-wrapper">
@@ -235,68 +305,56 @@ $total_expiring = $critical_count + $warning_count;
             checkboxes.forEach(cb => cb.checked = selectAll.checked);
         }
 
-        function sendSingleEmail(memberId, email, name, expiryDate, daysRemaining) {
-            if (confirm(`Send expiry email to ${name} (${email})?`)) {
-                fetch('send_expiry_email.php', {
+        async function sendSingleEmail(memberId, email, name, expiryDate, daysRemaining) {
+            if (!confirm(`Send expiry email to ${name} (${email})?`)) return;
+            
+            try {
+                const response = await fetch('send_expiry_emails.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        action: 'send_single',
                         member_id: memberId,
                         email: email,
                         name: name,
                         expiry_date: expiryDate,
                         days_remaining: daysRemaining
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Email sent successfully!');
-                    } else {
-                        alert('Failed to send email: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    alert('Error sending email: ' + error.message);
                 });
+                
+                const data = await response.json();
+                alert(data.success ? 'Email sent successfully!' : 'Failed: ' + data.message);
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         }
 
-        function sendBulkEmails() {
+        async function sendBulkEmails() {
             const selectedCheckboxes = document.querySelectorAll('.member-checkbox:checked');
             if (selectedCheckboxes.length === 0) {
                 alert('Please select members to send emails to.');
                 return;
             }
 
-            if (!confirm(`Send expiry emails to ${selectedCheckboxes.length} selected members?`)) {
-                return;
-            }
+            if (!confirm(`Send expiry emails to ${selectedCheckboxes.length} selected members?`)) return;
 
             const memberIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-            fetch('send_bulk_expiry_emails.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    member_ids: memberIds
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`Emails sent successfully! ${data.sent_count} emails sent.`);
-                } else {
-                    alert('Failed to send emails: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Error sending emails: ' + error.message);
-            });
+            
+            try {
+                const response = await fetch('send_expiry_emails.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'send_bulk',
+                        member_ids: memberIds
+                    })
+                });
+                
+                const data = await response.json();
+                alert(data.success ? `Success! ${data.sent_count} emails sent.` : 'Failed: ' + data.message);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
         }
     </script>
         </div>

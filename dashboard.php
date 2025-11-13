@@ -57,8 +57,9 @@ if ($user_role == 'admin') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - <?php echo SITE_NAME; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.0/font/bootstrap-icons.min.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?php echo SITE_URL; ?>assets/css/style.css" rel="stylesheet">
     <link href="<?php echo SITE_URL; ?>assets/css/custom.css" rel="stylesheet">
@@ -91,66 +92,74 @@ if ($user_role == 'admin') {
                 <div class="row">
                     <?php if ($user_role == 'admin'): ?>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-primary slide-up" style="animation-delay: 0.1s;">
-                                <div class="card-body">
+                            <div class="card enhanced-card slide-up" style="animation-delay: 0.1s;">
+                                <div class="card-header">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h5 class="card-title">Total Members</h5>
-                                            <h2><?php echo $stats['members']; ?></h2>
-                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
-                                                <i class="fas fa-arrow-up me-1"></i> Active members
-                                            </p>
                                         </div>
                                         <div class="icon"><i class="fas fa-users"></i></div>
                                     </div>
                                 </div>
+                                <div class="card-body">
+                                    <h2><?php echo $stats['members']; ?></h2>
+                                    <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                        <i class="fas fa-arrow-up me-1"></i> Active members
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-danger slide-up" style="animation-delay: 0.2s;">
-                                <div class="card-body">
+                            <div class="card enhanced-card slide-up" style="animation-delay: 0.2s;">
+                                <div class="card-header">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h5 class="card-title">Total Trainers</h5>
-                                            <h2><?php echo $stats['trainers']; ?></h2>
-                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
-                                                <i class="fas fa-certificate me-1"></i> Expert trainers
-                                            </p>
                                         </div>
                                         <div class="icon"><i class="fas fa-user-tie"></i></div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-info slide-up" style="animation-delay: 0.3s;">
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h5 class="card-title">Today's Attendance</h5>
-                                            <h2><?php echo $stats['attendance']; ?></h2>
-                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
-                                                <i class="fas fa-clock me-1"></i> Check-ins today
-                                            </p>
-                                        </div>
-                                        <div class="icon"><i class="fas fa-calendar-check"></i></div>
-                                    </div>
+                                    <h2><?php echo $stats['trainers']; ?></h2>
+                                    <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                        <i class="fas fa-certificate me-1"></i> Expert trainers
+                                    </p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="stats-card bg-success slide-up" style="animation-delay: 0.4s;">
+                            <div class="card enhanced-card slide-up" style="animation-delay: 0.3s;">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">Today's Attendance</h5>
+                                        </div>
+                                        <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                                    </div>
+                                </div>
                                 <div class="card-body">
+                                    <h2><?php echo $stats['attendance']; ?></h2>
+                                    <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                        <i class="fas fa-clock me-1"></i> Check-ins today
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-3 mb-4">
+                            <div class="card enhanced-card slide-up" style="animation-delay: 0.4s;">
+                                <div class="card-header">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h5 class="card-title">Monthly Revenue</h5>
-                                            <h2>₹<?php echo number_format($stats['revenue'], 0); ?></h2>
-                                            <p class="mb-0 mt-2" style="font-size: 0.875rem;">
-                                                <i class="fas fa-trending-up me-1"></i> This month
-                                            </p>
                                         </div>
                                         <div class="icon"><i class="fas fa-dollar-sign"></i></div>
                                     </div>
+                                </div>
+                                <div class="card-body">
+                                    <h2>₹<?php echo number_format($stats['revenue'], 0); ?></h2>
+                                    <p class="mb-0 mt-2" style="font-size: 0.875rem;">
+                                        <i class="fas fa-trending-up me-1"></i> This month
+                                    </p>
                                 </div>
                             </div>
                         </div>
