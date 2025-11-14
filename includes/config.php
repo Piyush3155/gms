@@ -1,4 +1,37 @@
 <?php
+// Load environment variables from .env file
+function loadEnv($path) {
+    if (!file_exists($path)) {
+        return false;
+    }
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) {
+            continue;
+        }
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value);
+        if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+            putenv(sprintf('%s=%s', $name, $value));
+            $_ENV[$name] = $value;
+            $_SERVER[$name] = $value;
+        }
+    }
+}
+
+loadEnv(__DIR__ . '/../.env');
+
+// Email Configuration
+define('SMTP_HOST', getenv('SMTP_HOST') ?: 'smtp.gmail.com');
+define('SMTP_PORT', getenv('SMTP_PORT') ?: 587);
+define('SMTP_USER', getenv('EMAIL_USER') ?: getenv('SMTP_USER') ?: 'your-email@gmail.com');
+define('SMTP_PASS', getenv('EMAIL_PASS') ?: getenv('SMTP_PASS') ?: 'your-app-password');
+
+// Razorpay Configuration
+define('RAZORPAY_KEY_ID', getenv('RAZORPAY_KEY_ID') ?: 'rzp_test_XXXXXXXXXX');
+define('RAZORPAY_KEY_SECRET', getenv('RAZORPAY_KEY_SECRET') ?: 'YOUR_RAZORPAY_SECRET');
+
 // Application configuration
 define('SITE_URL', 'http://localhost/gms/');
 define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') . '/');
@@ -14,6 +47,9 @@ require_once 'db.php';
 
 // Include security functions
 require_once 'security.php';
+
+// Include email service
+require_once 'email.php';
 
 // Set security headers
 set_security_headers();

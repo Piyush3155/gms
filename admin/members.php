@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require_once '../includes/config.php';
 require_role('admin');
 
@@ -44,6 +46,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($name) || empty($email)) {
         $errors[] = "Name and email are required.";
     } else {
+        // Check for duplicate email for new members
+        if (!$member) {
+            $check_stmt = $conn->prepare("SELECT id FROM members WHERE email = ?");
+            $check_stmt->bind_param("s", $email);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
+            if ($check_result->num_rows > 0) {
+                $errors[] = "A member with this email already exists.";
+            }
+            $check_stmt->close();
+        }
+        
+        if (empty($errors)) {
         if ($member) {
             // Update
             $stmt = $conn->prepare("UPDATE members SET name=?, gender=?, dob=?, contact=?, email=?, address=?, join_date=?, expiry_date=?, plan_id=?, trainer_id=?, status=? WHERE id=?");
@@ -66,6 +81,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $update_stmt->execute();
                 $update_stmt->close();
                 
+                // Send welcome email
+                try {
+                    $plan_name = '';
+                    if ($plan_id) {
+                        $plan_stmt = $conn->prepare("SELECT name FROM plans WHERE id = ?");
+                        $plan_stmt->bind_param("i", $plan_id);
+                        $plan_stmt->execute();
+                        $plan_result = $plan_stmt->get_result();
+                        $plan = $plan_result->fetch_assoc();
+                        $plan_name = $plan['name'] ?? '';
+                        $plan_stmt->close();
+                    }
+                    
+                    $emailService->sendWelcomeEmail([
+                        'name' => $name,
+                        'email' => $email,
+                        'plan_name' => $plan_name,
+                        'join_date' => $join_date,
+                        'expiry_date' => $expiry_date
+                    ]);
+                } catch (Exception $e) {
+                    // Log error but don't fail the registration
+                    error_log("Welcome email failed: " . $e->getMessage());
+                }
+                
                 log_activity("Added new member", "members", "Member ID: $new_member_id, Name: $name");
                 
                 // Redirect to generate PDF receipt
@@ -79,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $stmt->close();
     }
+}
 }
 
 // Get member statistics

@@ -4,10 +4,16 @@
  * Allows members to make payments using Razorpay, Stripe, or PayPal
  */
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 require_once '../includes/config.php';
 require_once '../includes/payment_gateway.php';
 
 require_permission('payments', 'add');
+
+// Initialize payment database tables
+$tempGateway = new PaymentGateway('razorpay');
 
 $message = '';
 $error = '';
@@ -18,7 +24,7 @@ $memberId = $_GET['member_id'] ?? null;
 $member = null;
 
 if ($memberId) {
-    $stmt = $conn->prepare("SELECT id, name, email, phone, membership_end FROM members WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, name, email, contact, expiry_date FROM members WHERE id = ?");
     $stmt->bind_param("i", $memberId);
     $stmt->execute();
     $member = $stmt->get_result()->fetch_assoc();
@@ -72,10 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['verify_payment'])) {
 }
 
 // Get all members for dropdown
-$members = $conn->query("SELECT id, name, email, phone FROM members ORDER BY name ASC");
+$members = $conn->query("SELECT id, name, email, contact FROM members ORDER BY name ASC");
 
 // Get membership plans
-$plans = $conn->query("SELECT id, name, price, duration FROM plans ORDER BY price ASC");
+$plans = $conn->query("SELECT id, name, amount, duration_months FROM plans ORDER BY amount ASC");
 
 // Get recent online transactions
 $recentTransactions = $conn->query("
@@ -223,8 +229,8 @@ $recentTransactions = $conn->query("
                                             $plans->data_seek(0);
                                             while ($plan = $plans->fetch_assoc()):
                                             ?>
-                                                <option value="<?php echo $plan['id']; ?>" data-price="<?php echo $plan['price']; ?>" data-duration="<?php echo $plan['duration']; ?>">
-                                                    <?php echo htmlspecialchars($plan['name']); ?> - ₹<?php echo number_format($plan['price'], 2); ?> (<?php echo $plan['duration']; ?> months)
+                                                <option value="<?php echo $plan['id']; ?>" data-price="<?php echo $plan['amount']; ?>" data-duration="<?php echo $plan['duration_months']; ?>">
+                                                    <?php echo htmlspecialchars($plan['name']); ?> - ₹<?php echo number_format($plan['amount'], 2); ?> (<?php echo $plan['duration_months']; ?> months)
                                                 </option>
                                             <?php endwhile; ?>
                                         </select>
@@ -343,7 +349,7 @@ $recentTransactions = $conn->query("
                                         prefill: {
                                             name: paymentOrder.member.name,
                                             email: paymentOrder.member.email,
-                                            contact: paymentOrder.member.phone
+                                            contact: paymentOrder.member.contact
                                         },
                                         theme: {
                                             color: '#3b82f6'

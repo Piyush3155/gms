@@ -94,7 +94,7 @@
                 <p><strong>Membership Details:</strong></p>
                 <p><strong>Plan:</strong> <?php echo htmlspecialchars($data['membership_plan']); ?></p>
                 <p><strong>Start Date:</strong> <?php echo date('F d, Y', strtotime($data['join_date'])); ?></p>
-                <p><strong>Expiry Date:</strong> <?php echo date('F d, Y', strtotime($data['expiry_date'])); ?></p>
+                <p><strong>Expiry Date:</strong> <?php echo !empty($data['expiry_date']) ? date('F d, Y', strtotime($data['expiry_date'])) : 'N/A'; ?></p>
             </div>
             
             <p><strong>What's Next?</strong></p>

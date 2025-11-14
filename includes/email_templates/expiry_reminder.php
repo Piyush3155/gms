@@ -89,7 +89,7 @@
             
             <div class="alert-box">
                 <p><strong>⏰ <?php echo $data['days_remaining']; ?> Days Remaining</strong></p>
-                <p>Your membership will expire on <strong><?php echo date('F d, Y', strtotime($data['expiry_date'])); ?></strong></p>
+                <p>Your membership will expire on <strong><?php echo !empty($data['expiry_date']) ? date('F d, Y', strtotime($data['expiry_date'])) : 'N/A'; ?></strong></p>
             </div>
             
             <p>Don't let your fitness journey hit pause! Renew your membership today and continue crushing your goals.</p>

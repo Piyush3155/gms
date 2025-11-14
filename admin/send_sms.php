@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_bulk_sms'])) {
             $stmt = $conn->query("SELECT id, name, phone FROM members WHERE status = 'active' AND phone IS NOT NULL AND phone != ''");
             break;
         case 'expiring_soon':
-            $stmt = $conn->query("SELECT id, name, phone FROM members WHERE status = 'active' AND membership_end BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND phone IS NOT NULL AND phone != ''");
+            $stmt = $conn->query("SELECT id, name, phone FROM members WHERE status = 'active' AND expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND phone IS NOT NULL AND phone != ''");
             break;
         case 'inactive':
             $stmt = $conn->query("SELECT id, name, phone FROM members WHERE status = 'inactive' AND phone IS NOT NULL AND phone != ''");

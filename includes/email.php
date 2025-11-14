@@ -6,10 +6,10 @@
 
 // Email configuration
 class EmailConfig {
-    public static $smtp_host = 'smtp.gmail.com';
-    public static $smtp_port = 587;
-    public static $smtp_username = 'your-email@gmail.com';
-    public static $smtp_password = 'your-app-password';
+    public static $smtp_host = SMTP_HOST;
+    public static $smtp_port = SMTP_PORT;
+    public static $smtp_username = SMTP_USER;
+    public static $smtp_password = SMTP_PASS;
     public static $smtp_encryption = 'tls';
     public static $from_email = 'noreply@gymmanagement.com';
     public static $from_name = 'Gym Management System';
@@ -23,7 +23,7 @@ class EmailService {
     }
     
     /**
-     * Send email using PHP mail function or SMTP
+     * Send email using SMTP
      */
     public function sendEmail($to, $subject, $message, $headers = []) {
         // Get gym settings
@@ -47,13 +47,149 @@ class EmailService {
         // Log email attempt
         $this->logEmail($to, $subject, 'sending');
         
-        // Send email
-        $result = mail($to, $subject, $message, $header_string);
+        try {
+            // Send email using SMTP
+            $result = $this->sendSMTPEmail($to, $subject, $message, $header_string);
+        } catch (Exception $e) {
+            error_log("SMTP Error: " . $e->getMessage());
+            $result = false;
+        }
         
         // Log result
         $this->logEmail($to, $subject, $result ? 'sent' : 'failed');
         
         return $result;
+    }
+    
+    /**
+     * Send email via SMTP
+     */
+    private function sendSMTPEmail($to, $subject, $message, $headers) {
+        $host = EmailConfig::$smtp_host;
+        $port = EmailConfig::$smtp_port;
+        $username = EmailConfig::$smtp_username;
+        $password = EmailConfig::$smtp_password;
+        $encryption = EmailConfig::$smtp_encryption;
+        
+        $socket = fsockopen(($encryption == 'ssl' ? 'ssl://' : '') . $host, $port, $errno, $errstr, 30);
+        if (!$socket) {
+            error_log("SMTP connection failed: $errstr ($errno)");
+            return false;
+        }
+        
+        // Read greeting
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // EHLO
+        fputs($socket, "EHLO $host\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // STARTTLS if TLS
+        if ($encryption == 'tls') {
+            fputs($socket, "STARTTLS\r\n");
+            $response = $this->smtpRead($socket);
+            if (!$this->isSuccess($response)) {
+                fclose($socket);
+                return false;
+            }
+            stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            
+            // EHLO again
+            fputs($socket, "EHLO $host\r\n");
+            $response = $this->smtpRead($socket);
+            if (!$this->isSuccess($response)) {
+                fclose($socket);
+                return false;
+            }
+        }
+        
+        // AUTH LOGIN
+        fputs($socket, "AUTH LOGIN\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        fputs($socket, base64_encode($username) . "\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        fputs($socket, base64_encode($password) . "\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // MAIL FROM
+        fputs($socket, "MAIL FROM: <$username>\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // RCPT TO
+        fputs($socket, "RCPT TO: <$to>\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // DATA
+        fputs($socket, "DATA\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // Send message
+        fputs($socket, $headers . "\r\n" . $message . "\r\n.\r\n");
+        $response = $this->smtpRead($socket);
+        if (!$this->isSuccess($response)) {
+            fclose($socket);
+            return false;
+        }
+        
+        // QUIT
+        fputs($socket, "QUIT\r\n");
+        fclose($socket);
+        
+        return true;
+    }
+    
+    /**
+     * Check if SMTP response is success (2xx or 3xx)
+     */
+    private function isSuccess($response) {
+        $code = substr($response, 0, 3);
+        return $code >= 200 && $code < 400;
+    }
+    
+    /**
+     * Read SMTP response
+     */
+    private function smtpRead($socket) {
+        $data = '';
+        while ($str = fgets($socket, 515)) {
+            $data .= $str;
+            if (substr($str, 3, 1) == ' ') break;
+        }
+        return $data;
     }
     
     /**

@@ -54,6 +54,19 @@ switch ($method) {
             $update_stmt->execute();
             $update_stmt->close();
             
+            // Send welcome email
+            try {
+                $emailService->sendWelcomeEmail([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'plan_name' => '',
+                    'join_date' => $data['join_date'] ?? date('Y-m-d'),
+                    'expiry_date' => ''
+                ]);
+            } catch (Exception $e) {
+                error_log("Welcome email failed: " . $e->getMessage());
+            }
+            
             $stmt->close();
             send_response(['id' => $new_id, 'message' => 'Member created successfully'], 201);
         } else {

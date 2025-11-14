@@ -27,8 +27,8 @@ class PaymentGateway {
     // Gateway configurations
     private $gatewayConfigs = [
         'razorpay' => [
-            'key_id' => 'rzp_test_XXXXXXXXXX',
-            'key_secret' => 'YOUR_RAZORPAY_SECRET',
+            'key_id' => RAZORPAY_KEY_ID,
+            'key_secret' => RAZORPAY_KEY_SECRET,
             'currency' => 'INR',
             'enabled' => true
         ],
@@ -50,7 +50,7 @@ class PaymentGateway {
     public function __construct($gateway = 'razorpay') {
         global $conn;
         $this->conn = $conn;
-        $this->emailService = new EmailService();
+        $this->emailService = new EmailService($this->conn);
         $this->gateway = $gateway;
         $this->config = $this->gatewayConfigs[$gateway] ?? [];
         
@@ -77,7 +77,6 @@ class PaymentGateway {
             error_message TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
             INDEX idx_transaction_id (transaction_id),
             INDEX idx_member_id (member_id),
             INDEX idx_status (status)
@@ -114,7 +113,7 @@ class PaymentGateway {
     public function createOrder($memberId, $amount, $purpose = 'membership', $metadata = []) {
         try {
             // Get member details
-            $stmt = $this->conn->prepare("SELECT id, name, email, phone FROM members WHERE id = ?");
+            $stmt = $this->conn->prepare("SELECT id, name, email, contact FROM members WHERE id = ?");
             $stmt->bind_param("i", $memberId);
             $stmt->execute();
             $member = $stmt->get_result()->fetch_assoc();
@@ -758,7 +757,7 @@ class PaymentReminderService {
     public function __construct() {
         global $conn;
         $this->conn = $conn;
-        $this->emailService = new EmailService();
+        $this->emailService = new EmailService($this->conn);
     }
     
     /**
@@ -768,9 +767,9 @@ class PaymentReminderService {
         $expiryDate = date('Y-m-d', strtotime("+{$daysBefore} days"));
         
         $stmt = $this->conn->prepare("
-            SELECT m.id, m.name, m.email, m.phone, m.membership_end
+            SELECT m.id, m.name, m.email, m.contact, m.expiry_date
             FROM members m
-            WHERE m.membership_end = ?
+            WHERE m.expiry_date = ?
             AND m.status = 'active'
         ");
         
@@ -800,10 +799,10 @@ class PaymentReminderService {
         $today = date('Y-m-d');
         
         $stmt = $this->conn->prepare("
-            SELECT m.id, m.name, m.email, m.phone, m.membership_end,
-                   DATEDIFF(?, m.membership_end) as days_overdue
+            SELECT m.id, m.name, m.email, m.contact, m.expiry_date,
+                   DATEDIFF(?, m.expiry_date) as days_overdue
             FROM members m
-            WHERE m.membership_end < ?
+            WHERE m.expiry_date < ?
             AND m.status = 'active'
             AND NOT EXISTS (
                 SELECT 1 FROM payment_transactions pt
@@ -841,7 +840,7 @@ class PaymentReminderService {
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
             <h2 style='color: #e74c3c;'>Membership Overdue</h2>
             <p>Dear {$member['name']},</p>
-            <p>Your gym membership expired on " . date('F j, Y', strtotime($member['membership_end'])) . ".</p>
+            <p>Your gym membership expired on " . date('F j, Y', strtotime($member['expiry_date'])) . ".</p>
             <p>It has been {$member['days_overdue']} days since your membership expired.</p>
             <p>Please renew your membership to continue enjoying our services.</p>
             <p><a href='" . SITE_URL . "/member/renew.php' style='background: #3498db; color: white; padding: 10px 20px; text-decoration: none; display: inline-block; border-radius: 5px;'>Renew Now</a></p>

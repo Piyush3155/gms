@@ -29,6 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['quick_register'])) {
         $update_stmt->execute();
         $update_stmt->close();
         
+        // Send welcome email
+        try {
+            $emailService->sendWelcomeEmail([
+                'name' => $name,
+                'email' => $email,
+                'plan_name' => $plan['name'] ?? '',
+                'join_date' => $join_date,
+                'expiry_date' => $expiry_date
+            ]);
+        } catch (Exception $e) {
+            error_log("Welcome email failed: " . $e->getMessage());
+        }
+        
         // Insert payment
         $invoice_no = 'INV' . date('Ymd') . $member_id;
         $stmt2 = $conn->prepare("INSERT INTO payments (member_id, plan_id, amount, payment_date, method, invoice_no, status) VALUES (?, ?, ?, ?, ?, ?, 'paid')");

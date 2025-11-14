@@ -362,10 +362,10 @@ class SMSService {
         $expiryDate = date('Y-m-d', strtotime("+{$daysBefore} days"));
         
         $stmt = $this->conn->prepare("
-            SELECT m.id, m.name, m.phone, m.membership_end, p.price
+            SELECT m.id, m.name, m.phone, m.expiry_date, p.price
             FROM members m
             LEFT JOIN plans p ON m.plan_id = p.id
-            WHERE m.membership_end = ?
+            WHERE m.expiry_date = ?
             AND m.status = 'active'
             AND m.phone IS NOT NULL
             AND m.phone != ''
@@ -379,7 +379,7 @@ class SMSService {
         
         while ($member = $result->fetch_assoc()) {
             $variables = [
-                'expiry_date' => date('d M Y', strtotime($member['membership_end'])),
+                'expiry_date' => date('d M Y', strtotime($member['expiry_date'])),
                 'amount' => number_format($member['price'] ?? 0, 2)
             ];
             
