@@ -6,8 +6,6 @@ A comprehensive, production-ready web-based Gym Management System built with PHP
 [![MySQL Version](https://img.shields.io/badge/MySQL-5.7%2B-orange)](https://www.mysql.com)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple)](https://getbootstrap.com)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![PWA Ready](https://img.shields.io/badge/PWA-Ready-success)](manifest.json)
-[![Production Ready](https://img.shields.io/badge/Production-Ready-brightgreen)](PRODUCTION_DEPLOYMENT.md)
 
 ## 🚀 Production Ready Features
 
@@ -121,8 +119,7 @@ This system includes enterprise-level features and is optimized for production d
 | **QR Codes** | PHP QR Code Library |
 | **Email** | PHPMailer / Native Mail |
 | **SMS** | Twilio API |
-| **Payments** | Razorpay, Stripe, PayPal APIs |
-| **PWA** | Service Workers, Web Manifest |
+| **Payments** | Razorpay|
 | **Icons** | Font Awesome 6 |
 | **Data Tables** | Custom DataTable implementation |
 
@@ -171,10 +168,7 @@ This system includes enterprise-level features and is optimized for production d
 
 ### Production Deployment
 
-For production deployment, follow the comprehensive guide:
-📖 **[PRODUCTION_DEPLOYMENT.md](PRODUCTION_DEPLOYMENT.md)**
-
-Key production steps:
+For production deployment, ensure the following steps:
 1. Configure `includes/config.php` with production settings
 2. Set `DEBUG_MODE = false`
 3. Enable HTTPS with SSL certificate
@@ -188,64 +182,146 @@ Key production steps:
 
 ```
 gms/
-├── includes/                   # Core system files
-│   ├── config.example.php     # Configuration template
-│   ├── config.php             # Configuration (create from example)
-│   ├── db.php                 # Database connection
-│   ├── security.php           # Security functions
-│   ├── email.php              # Email service
-│   ├── sms_service.php        # SMS integration
-│   ├── payment_gateway.php    # Payment processing
-│   ├── qrcode_service.php     # QR code generation
-│   ├── analytics.php          # Analytics engine
-│   ├── backup_service.php     # Backup management
-│   ├── header.php             # Header template
-│   ├── footer.php             # Footer template
-│   └── email_templates/       # Email templates
-├── admin/                      # Administrator panel
-│   ├── backup_enhanced.php    # Advanced backup system
-│   ├── send_expiry_emails.php # Email automation
-│   ├── online_payments.php    # Payment management
-│   ├── send_payment_reminders.php
-│   ├── send_sms.php           # SMS campaigns
-│   ├── cron_backup.php        # Automated backup cron
-│   ├── cron_expiry_emails.php # Email automation cron
-│   ├── cron_cleanup_backups.php
-│   └── ... (other admin files)
-├── trainer/                    # Trainer panel
-├── member/                     # Member panel
-├── api/                        # REST API endpoints
-│   ├── payment_webhook.php    # Payment gateway webhooks
-│   └── ...
-├── assets/                     # Static assets
-│   ├── css/
-│   │   ├── style.css
-│   │   ├── validation.css
-│   │   └── ...
-│   ├── js/
-│   │   ├── form-validator.js
-│   │   ├── enhanced.js
-│   │   └── ...
-│   └── images/
-├── database/
-│   └── schema.sql             # Database schema
-├── backups/                    # Database backups (auto-generated)
-├── logs/                       # Application logs (create manually)
-├── uploads/                    # File uploads (create manually)
-├── fpdf/                       # PDF library
-├── phpqrcode/                  # QR code library
-├── .htaccess                   # Apache security rules
-├── .gitignore                  # Git ignore rules
-├── manifest.json               # PWA manifest
-├── service-worker.js           # PWA service worker
-├── offline.html                # PWA offline page
-├── login.php                   # Authentication
+├── .env
+├── .gitignore
+├── .htaccess
+├── README.md
+├── dashboard.php
+├── index.php
+├── login.php
 ├── logout.php
-├── index.php                   # Landing page
-├── dashboard.php               # Role-based routing
-├── README.md                   # This file
-├── DEPLOYMENT_GUIDE.md         # Deployment instructions
-└── PRODUCTION_DEPLOYMENT.md    # Production checklist
+├── offline.html
+├── service-worker.js
+├── admin/
+│   ├── activity_log.php
+│   ├── api.php
+│   ├── attendance.php
+│   ├── backup.php
+│   ├── branches.php
+│   ├── cron_backup.php
+│   ├── cron_cleanup_backups.php
+│   ├── cron_expiry_emails.php
+│   ├── equipment.php
+│   ├── expenses.php
+│   ├── expiry_alerts.php
+│   ├── feedback.php
+│   ├── generate_admission_receipt.php
+│   ├── group_classes.php
+│   ├── index.php
+│   ├── inventory.php
+│   ├── member_progress.php
+│   ├── members.php
+│   ├── notifications.php
+│   ├── online_payments.php
+│   ├── payments.php
+│   ├── payroll.php
+│   ├── plans.php
+│   ├── profile.php
+│   ├── qr_scanner.php
+│   ├── rbac.php
+│   ├── reception.php
+│   ├── renew_membership.php
+│   ├── reports.php
+│   ├── sales.php
+│   ├── send_expiry_emails.php
+│   ├── send_payment_reminders.php
+│   ├── send_sms.php
+│   ├── settings.php
+│   ├── suppliers.php
+│   └── trainers.php
+├── api/
+│   ├── attendance.php
+│   ├── config.php
+│   ├── index.php
+│   ├── members.php
+│   ├── payment_webhook.php
+│   ├── payments.php
+│   └── search.php
+├── assets/
+│   ├── css/
+│   │   ├── animations.css
+│   │   ├── components.css
+│   │   ├── custom.css
+│   │   ├── responsive.css
+│   │   ├── style.css
+│   │   └── validation.css
+│   ├── images/
+│   │   └── README.md
+│   └── js/
+│       ├── chartConfig.js
+│       ├── enhanced.js
+│       ├── form-validator.js
+│       ├── main.js
+│       ├── qr-scanner-worker.min.js
+│       ├── qr-scanner.umd.min.js
+│       └── sidebar.js
+├── backups/
+│   └── backup_2025-10-25_17-53-10.sql
+├── database/
+│   └── schema.sql
+├── fpdf/
+│   ├── changelog.htm
+│   ├── FAQ.htm
+│   ├── fpdf.css
+│   ├── fpdf.php
+│   ├── install.txt
+│   ├── license.txt
+│   ├── doc/
+│   ├── font/
+│   ├── makefont/
+│   └── tutorial/
+├── includes/
+│   ├── analytics.php
+│   ├── backup_service.php
+│   ├── config.example.php
+│   ├── config.php
+│   ├── db.php
+│   ├── email.php
+│   ├── email_templates/
+│   ├── footer.php
+│   ├── header.php
+│   ├── payment_gateway.php
+│   ├── qrcode_service.php
+│   ├── security.php
+│   └── sms_service.php
+├── logs/
+├── member/
+│   ├── attendance.php
+│   ├── classes.php
+│   ├── diets.php
+│   ├── feedback.php
+│   ├── index.php
+│   ├── profile.php
+│   └── workouts.php
+├── phpqrcode/
+│   ├── CHANGELOG
+│   ├── index.php
+│   ├── INSTALL
+│   ├── LICENSE
+│   ├── phpqrcode.php
+│   ├── qrbitstream.php
+│   ├── qrconfig.php
+│   ├── qrconst.php
+│   ├── qrencode.php
+│   ├── qrimage.php
+│   ├── qrinput.php
+│   ├── qrlib.php
+│   ├── qrmask.php
+│   ├── qrrscode.php
+│   ├── qrspec.php
+│   ├── qrsplit.php
+│   ├── qrtools.php
+│   ├── README
+│   ├── VERSION
+│   ├── bindings/
+│   ├── cache/
+│   └── tools/
+├── trainer/
+│   ├── attendance.php
+│   ├── index.php
+│   ├── plans.php
+│   └── profile.php
+└── uploads/
 ```
 
 ## Configuration
@@ -367,7 +443,7 @@ API endpoints are available under `/api/` directory:
 
 For issues, questions, or contributions:
 
-- **Documentation**: See DEPLOYMENT_GUIDE.md
+- **Documentation**: See README.md for setup instructions
 - **Email**: support@yourgym.com
 - **Issues**: Create an issue in the repository
 
@@ -375,33 +451,3 @@ For issues, questions, or contributions:
 
 MIT License - feel free to use for personal or commercial projects.
 
-## Credits
-
-Developed with ❤️ for modern gym management
-
-## Changelog
-
-### v2.0.0 (Production Release)
-- ✅ Enhanced security implementation
-- ✅ Email automation system
-- ✅ SMS integration (Twilio)
-- ✅ Payment gateway integration (Razorpay, Stripe, PayPal)
-- ✅ Advanced analytics and reporting
-- ✅ PWA support with offline capabilities
-- ✅ Form validation system
-- ✅ QR code generation for members
-- ✅ Automated backup system
-- ✅ Production deployment optimization
-- ✅ Removed test and redundant files
-- ✅ Added comprehensive documentation
-
-### v1.0.0 (Initial Release)
-- Basic gym management features
-- Member, trainer, admin panels
-- Attendance tracking
-- Payment management
-- Reports generation
-
----
-
-**🎯 Production Ready** | **🔒 Secure** | **📱 Mobile First** | **⚡ Fast** | **📊 Analytics**
