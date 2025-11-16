@@ -153,7 +153,7 @@ $member_stats['avg_age'] = round($result->fetch_assoc()['avg_age'] ?? 0);
 $members = $conn->query("SELECT m.*, p.name as plan_name, t.name as trainer_name FROM members m LEFT JOIN plans p ON m.plan_id = p.id LEFT JOIN trainers t ON m.trainer_id = t.id");
 
 // Get plans and trainers for dropdowns
-$plans = $conn->query("SELECT id, name FROM plans");
+$plans = $conn->query("SELECT id, name, duration_months FROM plans");
 $trainers = $conn->query("SELECT id, name FROM trainers");
 ?>
 
@@ -360,8 +360,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers");
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Expiry Date</label>
-                                <input type="date" class="form-control" name="expiry_date" value="<?php echo htmlspecialchars($member['expiry_date'] ?? ''); ?>">
+                                <label class="form-label">Expiry Date <small class="text-muted">(Auto-calculated)</small></label>
+                                <input type="date" class="form-control" name="expiry_date" value="<?php echo htmlspecialchars($member['expiry_date'] ?? ''); ?>" readonly>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Address</label>
@@ -449,6 +449,52 @@ document.addEventListener('DOMContentLoaded', function () {
     const memberForm = document.getElementById('memberForm');
     if(memberForm) {
         new FormValidator(memberForm);
+    }
+
+    // Auto-calculate expiry date based on plan selection
+    const planSelect = document.querySelector('select[name="plan_id"]');
+    const joinDateInput = document.querySelector('input[name="join_date"]');
+    const expiryDateInput = document.querySelector('input[name="expiry_date"]');
+
+    // Store plan durations in JavaScript object
+        <?php
+        mysqli_data_seek($plans, 0);
+        $durations = [];
+        while ($plan = $plans->fetch_assoc()) {
+            $durations[$plan['id']] = (int) $plan['duration_months'];
+        }
+        ?>
+        const planDurations = <?php echo json_encode($durations); ?>;
+
+    function calculateExpiryDate() {
+        const selectedPlanId = planSelect.value;
+        const joinDate = joinDateInput.value;
+
+        if (selectedPlanId && joinDate && planDurations[selectedPlanId]) {
+            const durationMonths = parseInt(planDurations[selectedPlanId]);
+            const joinDateObj = new Date(joinDate);
+            const expiryDateObj = new Date(joinDateObj);
+            expiryDateObj.setMonth(expiryDateObj.getMonth() + durationMonths);
+
+            // Format date as YYYY-MM-DD
+            const year = expiryDateObj.getFullYear();
+            const month = String(expiryDateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(expiryDateObj.getDate()).padStart(2, '0');
+            const formattedExpiryDate = `${year}-${month}-${day}`;
+
+            expiryDateInput.value = formattedExpiryDate;
+        }
+    }
+
+    // Add event listeners
+    if (planSelect && joinDateInput && expiryDateInput) {
+        planSelect.addEventListener('change', calculateExpiryDate);
+        joinDateInput.addEventListener('change', calculateExpiryDate);
+
+        // Calculate on page load if values are already set (for edit mode)
+        if (planSelect.value && joinDateInput.value) {
+            calculateExpiryDate();
+        }
     }
 });
 </script>

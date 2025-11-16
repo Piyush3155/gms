@@ -41,8 +41,24 @@ switch ($method) {
             send_response(['error' => 'Name and email are required'], 400);
         }
         
-        $stmt = $conn->prepare("INSERT INTO members (name, email, contact, join_date, plan_id, status) VALUES (?, ?, ?, ?, ?, 'active')");
-        $stmt->bind_param("ssssi", $data['name'], $data['email'], $data['contact'] ?? '', $data['join_date'] ?? date('Y-m-d'), $data['plan_id'] ?? null);
+        // Calculate expiry date if plan_id is provided
+        $expiry_date = null;
+        if (isset($data['plan_id']) && !empty($data['plan_id'])) {
+            $plan_stmt = $conn->prepare("SELECT duration_months FROM plans WHERE id = ?");
+            $plan_stmt->bind_param("i", $data['plan_id']);
+            $plan_stmt->execute();
+            $plan_result = $plan_stmt->get_result();
+            $plan = $plan_result->fetch_assoc();
+            $plan_stmt->close();
+            
+            if ($plan) {
+                $join_date = $data['join_date'] ?? date('Y-m-d');
+                $expiry_date = date('Y-m-d', strtotime($join_date . ' + ' . $plan['duration_months'] . ' months'));
+            }
+        }
+        
+        $stmt = $conn->prepare("INSERT INTO members (name, email, contact, join_date, expiry_date, plan_id, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
+        $stmt->bind_param("sssssi", $data['name'], $data['email'], $data['contact'] ?? '', $data['join_date'] ?? date('Y-m-d'), $expiry_date, $data['plan_id'] ?? null);
         
         if ($stmt->execute()) {
             $new_id = $conn->insert_id;
@@ -56,12 +72,23 @@ switch ($method) {
             
             // Send welcome email
             try {
+                $plan_name = '';
+                if (isset($data['plan_id']) && !empty($data['plan_id'])) {
+                    $plan_stmt = $conn->prepare("SELECT name FROM plans WHERE id = ?");
+                    $plan_stmt->bind_param("i", $data['plan_id']);
+                    $plan_stmt->execute();
+                    $plan_result = $plan_stmt->get_result();
+                    $plan = $plan_result->fetch_assoc();
+                    $plan_name = $plan['name'] ?? '';
+                    $plan_stmt->close();
+                }
+                
                 $emailService->sendWelcomeEmail([
                     'name' => $data['name'],
                     'email' => $data['email'],
-                    'plan_name' => '',
+                    'plan_name' => $plan_name,
                     'join_date' => $data['join_date'] ?? date('Y-m-d'),
-                    'expiry_date' => ''
+                    'expiry_date' => $expiry_date ?? ''
                 ]);
             } catch (Exception $e) {
                 error_log("Welcome email failed: " . $e->getMessage());
